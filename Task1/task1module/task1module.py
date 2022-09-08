@@ -54,6 +54,52 @@ def bubble_sort(v: np.ndarray):
     return v
 
 
+def quick_sort(v):
+    quick_sort_r(v, 0, len(v) - 1)
+
+
+def quick_sort_r(v, start, end):
+    if start >= end:
+        return
+
+    p = partition(v, start, end)
+    quick_sort_r(v, start, p - 1)
+    quick_sort_r(v, p + 1, end)
+
+
+def partition(v, start, end):
+    pivot = v[start]
+    low = start + 1
+    high = end
+
+    while True:
+        # If the current value we're looking at is larger than the pivot
+        # it's in the right place (right side of pivot) and we can move left,
+        # to the next element.
+        # We also need to make sure we haven't surpassed the low pointer, since that
+        # indicates we have already moved all the elements to their correct side of the pivot
+        while low <= high and v[high] >= pivot:
+            high = high - 1
+
+        # Opposite process of the one above
+        while low <= high and v[low] <= pivot:
+            low = low + 1
+
+        # We either found a value for both high and low that is out of order
+        # or low is higher than high, in which case we exit the loop
+        if low < high:
+            v[low], v[high] = v[high], v[low]
+        else:
+            break
+
+    v[start], v[high] = v[high], v[start]
+    return high
+
+
+def tim_sort(v):
+    return v
+
+
 def test_time_complexity(function, args, n):
     exectime = np.zeros(n, dtype=float)
     for i in range(1, n + 1):
