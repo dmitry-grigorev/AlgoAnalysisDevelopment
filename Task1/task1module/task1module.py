@@ -72,7 +72,7 @@ def partition(v, start, end):
     low = start + 1
     high = end
 
-    while True:
+    while low < high:
         # If the current value we're looking at is larger than the pivot
         # it's in the right place (right side of pivot) and we can move left,
         # to the next element.
@@ -89,8 +89,6 @@ def partition(v, start, end):
         # or low is higher than high, in which case we exit the loop
         if low < high:
             v[low], v[high] = v[high], v[low]
-        else:
-            break
 
     v[start], v[high] = v[high], v[start]
     return high
