@@ -94,8 +94,96 @@ def partition(v, start, end):
     return high
 
 
+def calc_min_run(length, minMerge):
+    """Returns the minimum length of a
+        run from 23 to 64 so that
+        the len(array)/minrun is less than or
+        equal to a power of 2.
+
+        e.g. 1=>1, ..., 63=>63, 64=>32, 65=>33,
+        ..., 127=>64, 128=>32, ...
+        """
+    r = 0
+    while length >= minMerge:
+        r |= length & 1
+        length >>= 1
+    return length + r
+
+
+def insertion_sort(v, left, right):
+    for i in range(left + 1, right + 1):
+        j = i
+        while j > left and v[j] < v[j - 1]:
+            v[j], v[j - 1] = v[j - 1], v[j]
+            j -= 1
+
+
+def merge(v, left, mid, right):
+    # original array is broken in two parts
+    # left and right array
+    len1 = mid - left + 1
+    len2 = right - mid
+    leftArr, rightArr = [], []
+    for i in range(0, len1):
+        leftArr.append(v[left + i])
+    for i in range(0, len2):
+        rightArr.append(v[mid + 1 + i])
+
+    i, j, k = 0, 0, left
+
+    # after comparing, we merge those two array
+    # in larger sub array
+    while i < len1 and j < len2:
+        if leftArr[i] <= rightArr[j]:
+            v[k] = leftArr[i]
+            i += 1
+
+        else:
+            v[k] = rightArr[j]
+            j += 1
+
+        k += 1
+
+    # Copy remaining elements of left, if any
+    while i < len1:
+        v[k] = leftArr[i]
+        k += 1
+        i += 1
+
+    # Copy remaining element of right, if any
+    while j < len2:
+        v[k] = rightArr[j]
+        k += 1
+        j += 1
+
+
 def tim_sort(v):
-    return v
+    length = len(v)
+    minRun = calc_min_run(length, 32)
+    for start in range(0, length, minRun):
+        end = min(start + minRun - 1, length - 1)
+        insertion_sort(v, start, end)
+
+    size = minRun
+    while size < length:
+
+        # Pick starting point of left sub array. We
+        # are going to merge arr[left..left+size-1]
+        # and arr[left+size, left+2*size-1]
+        # After every merge, we increase left by 2*size
+        for left in range(0, length, 2 * size):
+
+            # Find ending point of left sub array
+            # mid+1 is starting point of right sub array
+            mid = min(length - 1, left + size - 1)
+            right = min((left + 2 * size - 1), (length - 1))
+
+            # Merge sub array arr[left.....mid] &
+            # arr[mid+1....right]
+            if mid < right:
+                merge(v, left, mid, right)
+
+        size = 2 * size
 
 
 def test_time_complexity(function, args, n):
