@@ -59,31 +59,35 @@ def quick_sort(v: np.ndarray):
 
 
 def quick_sort_r(v, start, end):
-    if start >= end:
+    if len(v) == 1:
         return
-
-    p = partition(v, start, end)
-    quick_sort_r(v, start, p - 1)
-    quick_sort_r(v, p + 1, end)
+    if start < end:
+        pi = partition(v, start, end)
+        quick_sort_r(v, start, pi - 1)  # Recursively sorting the left values
+        quick_sort_r(v, pi + 1, end)  # Recursively sorting the right values
 
 
 def partition(v, start, end):
+    middle = (start + end - 1) // 2
+    median_first(v, start, middle, end - 1)
     pivot = v[start]
-    low = start + 1
-    high = end
+    i = start + 1
+    for j in range(start + 1, end, 1):
+        if v[j] < pivot:
+            v[i], v[j] = v[j], v[i]
+            i += 1
+    v[start], v[i - 1] = v[i - 1], v[start]
+    return i - 1
 
-    while low < high:
-        while low <= high and v[high] >= pivot:
-            high -= 1
 
-        while low <= high and v[low] <= pivot:
-            low += 1
+def compare_swap(L, a, b):
+    L[a], L[b] = min(L[a], L[b]), max(L[a], L[b])
 
-        if low < high:
-            v[low], v[high] = v[high], v[low]
 
-    v[start], v[high] = v[high], v[start]
-    return high
+def median_first(L, a, b, c):
+    compare_swap(L, b, a)  # L[b]<=L[a]
+    compare_swap(L, b, c)  # L[b]<=L[c] i.e L[b] smallest
+    compare_swap(L, a, c)  # L[a]<=L[c] i.e L[c] largest
 
 
 def calc_min_run(length, minMerge):
