@@ -26,10 +26,10 @@ def prod_of_elements(v):
 
 
 def cacl_polynom_direct(coefs, x):
-    s, x_ = 0, 1
+    s, k = 0, 0
     for coef in coefs:
-        s += coef * x_
-        x_ *= x
+        s += coef * np.power(x, k)
+        k += 1
     return s
 
 
@@ -44,7 +44,7 @@ def bubble_sort(v: np.ndarray):
     has_swapped = True
     num_of_iterations = 0
 
-    while (has_swapped):
+    while has_swapped:
         has_swapped = False
         for i in range(v.shape[0] - num_of_iterations - 1):
             if v[i] > v[i + 1]:
@@ -54,8 +54,8 @@ def bubble_sort(v: np.ndarray):
     return v
 
 
-def quick_sort(v):
-    quick_sort_r(v, 0, len(v) - 1)
+def quick_sort(v: np.ndarray):
+    quick_sort_r(v, 0, v.shape[0] - 1)
 
 
 def quick_sort_r(v, start, end):
@@ -73,20 +73,12 @@ def partition(v, start, end):
     high = end
 
     while low < high:
-        # If the current value we're looking at is larger than the pivot
-        # it's in the right place (right side of pivot) and we can move left,
-        # to the next element.
-        # We also need to make sure we haven't surpassed the low pointer, since that
-        # indicates we have already moved all the elements to their correct side of the pivot
         while low <= high and v[high] >= pivot:
-            high = high - 1
+            high -= 1
 
-        # Opposite process of the one above
         while low <= high and v[low] <= pivot:
-            low = low + 1
+            low += 1
 
-        # We either found a value for both high and low that is out of order
-        # or low is higher than high, in which case we exit the loop
         if low < high:
             v[low], v[high] = v[high], v[low]
 
@@ -186,6 +178,16 @@ def tim_sort(v):
         size = 2 * size
 
 
+def matrix_multiplication(A: np.ndarray, B: np.ndarray):
+    n = A.shape[0]
+    C = np.zeros(shape=(n, n))
+    for i in range(n):
+        for j in range(n):
+            for k in range(n):
+                C[i, j] += A[i, k] * B[k, j]
+    return C
+
+
 def test_time_complexity(function, args, n):
     exectime = np.zeros(n, dtype=float)
     for i in range(1, n + 1):
@@ -199,14 +201,33 @@ def plot_exectime(times: np.ndarray, fitfunc):
     n = times.shape[0]
     n_seq = np.linspace(1, n, n)
     fit = np.polyfit(fitfunc(n_seq), times, 1)
-    return ggplot() + geom_point(aes(x = n_seq, y = times)) + theme_light() + xlab("Array size") + \
-           ylab("Execution time (in milliseconds)") + geom_line(aes(x = n_seq, y = fit[1] + fit[0] * fitfunc(n_seq)),
-                                                                color = "red", size = 2)
+    print(fit[0])
+    return ggplot() + geom_point(aes(x=n_seq, y=times)) + xlab("Array size") + \
+           ylab("Execution time (in milliseconds)") + geom_line(aes(x=n_seq, y=fit[1] + fit[0] * fitfunc(n_seq)),
+                                                                color="red", size=2, alpha=0.5)
 
 
-def plot_algo_complexity_info(func, fitfunc, args = list()):
+def plot_algo_complexity_info(func, fitfunc, args=list()):
     times = np.zeros(2000, dtype=float)
     for _ in range(5):
         times += test_time_complexity(func, [np.random.uniform(size=2000)] + args, 2000)
     times /= 5
     return plot_exectime(times, fitfunc)
+
+
+def test_mul_complexity(A: np.ndarray, B: np.ndarray):
+    n = A.shape[0]
+    exectime = np.zeros(n, dtype=float)
+    for i in range(1, n + 1):
+        start = timeit.default_timer()
+        matrix_multiplication(A[:i, :i], B[:i, :i])
+        exectime[i - 1] = (timeit.default_timer() - start) * 1000
+    return exectime
+
+
+def plot_mul_complexity_info():
+    times = np.zeros(100, dtype=float)
+    for _ in range(5):
+        times += test_mul_complexity(np.random.uniform(size=(100, 100)), np.random.uniform(size=(100, 100)))
+    times /= 5
+    return plot_exectime(times, lambda x: x ** 3)
