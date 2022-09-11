@@ -33,6 +33,12 @@ def cacl_polynom_direct(coefs, x):
     return s
 
 
+'''
+This function just replicates the algorithm of direct calculation of polynom.
+It is used for time complexity measurement in order to avoid overflow error.
+'''
+
+
 def fake_cacl_polynom_direct(coefs, x):
     s, k = 0, 0
     for coef in coefs:
@@ -66,10 +72,16 @@ def bubble_sort(v):
     return v
 
 
+'''
+Entry function of quick sort algorithm
+'''
 def quick_sort(v):
     quick_sort_r(v, 0, len(v) - 1)
 
 
+'''
+Function which implements iterative quick sort with stack data structure
+'''
 def quick_sort_r(v, start, end):
     if len(v) == 1:
         return
@@ -107,6 +119,9 @@ def quick_sort_r(v, start, end):
             stack[top] = end
 
 
+'''
+Partition function for quick sort algorithm
+'''
 def partition(v, start, end):
     i = (start - 1)
     x = v[end]
@@ -120,6 +135,9 @@ def partition(v, start, end):
     return (i + 1)
 
 
+'''
+This function calculates minimum run length for tim sort
+'''
 def calc_min_run(length, minMerge):
     r = 0
     while length >= minMerge:
@@ -169,7 +187,7 @@ def merge(v, left, mid, right):
         j += 1
 
 
-def tim_sort(v: np.ndarray):
+def tim_sort(v):
     length = len(v)
     minRun = calc_min_run(length, 32)
     for start in range(0, length, minRun):
@@ -192,7 +210,7 @@ def tim_sort(v: np.ndarray):
 
 def matrix_multiplication(A, B):
     n = len(A)
-    C = [[0]*n]*n
+    C = [[0] * n] * n
     for i in range(n):
         for j in range(n):
             for k in range(n):
@@ -200,6 +218,10 @@ def matrix_multiplication(A, B):
     return C
 
 
+'''
+This function provides common interface for time complexity test of considered algorithms and functions.
+'args' parameter must contain 'function' parameter. 
+'''
 def test_time_complexity(function, args, n):
     exectime = np.zeros(n, dtype=float)
     v, fargs = args[0].tolist(), args[1:]
@@ -211,6 +233,9 @@ def test_time_complexity(function, args, n):
     return exectime
 
 
+'''
+This function plots the graph of calculation results
+'''
 def plot_exectime(times: np.ndarray, fitfunc):
     n = times.shape[0]
     n_seq = np.linspace(1, n, n)
@@ -229,7 +254,6 @@ def plot_algo_complexity_info(func, fitfunc, args=list()):
 
 
 def test_mul_complexity(A, B):
-
     n = len(A)
     listA, listB = A.tolist(), B.tolist()
     exectime = np.zeros(n, dtype=float)
