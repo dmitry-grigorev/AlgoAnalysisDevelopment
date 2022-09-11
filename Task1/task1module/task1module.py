@@ -33,6 +33,18 @@ def cacl_polynom_direct(coefs, x):
     return s
 
 
+def fake_cacl_polynom_direct(coefs, x):
+    s, k = 0, 0
+    for coef in coefs:
+        i = 0
+        while i < k:
+            i += 1
+            x * x
+        s += coef * x
+        k += 1
+    return s
+
+
 def calc_polynom_horner(coefs: np.ndarray, x):
     s = coefs[-1]
     for coef in coefs[::-1][1:]:
@@ -115,11 +127,11 @@ def merge(v, left, mid, right):
     # left and right array
     len1 = mid - left + 1
     len2 = right - mid
-    leftArr, rightArr = [], []
+    leftArr, rightArr = np.zeros(shape = len1) , np.zeros(shape = len2)
     for i in range(0, len1):
-        leftArr.append(v[left + i])
+        leftArr[i] = v[left + i]
     for i in range(0, len2):
-        rightArr.append(v[mid + 1 + i])
+        rightArr[i] = v[mid + 1 + i]
 
     i, j, k = 0, 0, left
 
@@ -149,8 +161,8 @@ def merge(v, left, mid, right):
         j += 1
 
 
-def tim_sort(v):
-    length = len(v)
+def tim_sort(v: np.ndarray):
+    length = v.shape[0]
     minRun = calc_min_run(length, 32)
     for start in range(0, length, minRun):
         end = min(start + minRun - 1, length - 1)
