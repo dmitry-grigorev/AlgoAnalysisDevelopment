@@ -71,31 +71,63 @@ def quick_sort(v: np.ndarray):
 
 
 def quick_sort_r(v, start, end):
-    if start >= end:
+    if len(v) == 1:
         return
+    # Create an auxiliary stack
+    size = end - start + 1
+    stack = [0] * size
 
-    p = partition(v, start, end)
-    quick_sort_r(v, start, p - 1)
-    quick_sort_r(v, p + 1, end)
+    # initialize top of stack
+    top = -1
+
+    # push initial values of l and h to stack
+    top = top + 1
+    stack[top] = start
+    top = top + 1
+    stack[top] = end
+
+    # Keep popping from stack while is not empty
+    while top >= 0:
+
+        # Pop h and l
+        end = stack[top]
+        top = top - 1
+        start = stack[top]
+        top = top - 1
+
+        # Set pivot element at its correct position in
+        # sorted array
+        p = partition(v, start, end)
+
+        # If there are elements on left side of pivot,
+        # then push left side to stack
+        if p - 1 > start:
+            top = top + 1
+            stack[top] = start
+            top = top + 1
+            stack[top] = p - 1
+
+        # If there are elements on right side of pivot,
+        # then push right side to stack
+        if p + 1 < end:
+            top = top + 1
+            stack[top] = p + 1
+            top = top + 1
+            stack[top] = end
 
 
 def partition(v, start, end):
-    pivot = v[start]
-    low = start + 1
-    high = end
+    i = (start - 1)
+    x = v[end]
 
-    while low < high:
-        while low <= high and v[high] >= pivot:
-            high -= 1
+    for j in range(start, end):
+        if v[j] <= x:
+            # increment index of smaller element
+            i = i + 1
+            v[i], v[j] = v[j], v[i]
 
-        while low <= high and v[low] <= pivot:
-            low += 1
-
-        if low < high:
-            v[low], v[high] = v[high], v[low]
-
-    v[start], v[high] = v[high], v[start]
-    return high
+    v[i + 1], v[end] = v[end], v[i + 1]
+    return (i + 1)
 
 
 def calc_min_run(length, minMerge):
