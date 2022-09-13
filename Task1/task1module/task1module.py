@@ -75,6 +75,8 @@ def bubble_sort(v):
 '''
 Entry function of quick sort algorithm
 '''
+
+
 def quick_sort(v):
     quick_sort_r(v, 0, len(v) - 1)
 
@@ -82,6 +84,8 @@ def quick_sort(v):
 '''
 Function which implements iterative quick sort with stack data structure
 '''
+
+
 def quick_sort_r(v, start, end):
     if len(v) == 1:
         return
@@ -122,6 +126,8 @@ def quick_sort_r(v, start, end):
 '''
 Partition function for quick sort algorithm
 '''
+
+
 def partition(v, start, end):
     i = (start - 1)
     x = v[end]
@@ -138,6 +144,8 @@ def partition(v, start, end):
 '''
 This function calculates minimum run length for tim sort
 '''
+
+
 def calc_min_run(length, minMerge):
     r = 0
     while length >= minMerge:
@@ -222,6 +230,8 @@ def matrix_multiplication(A, B):
 This function provides common interface for time complexity test of considered algorithms and functions.
 'args' parameter must contain 'function' parameter. 
 '''
+
+
 def test_time_complexity(function, args, n):
     exectime = np.zeros(n, dtype=float)
     v, fargs = args[0].tolist(), args[1:]
@@ -236,6 +246,8 @@ def test_time_complexity(function, args, n):
 '''
 This function plots the graph of calculation results
 '''
+
+
 def plot_exectime(times: np.ndarray, fitfunc):
     n = times.shape[0]
     n_seq = np.linspace(1, n, n)
