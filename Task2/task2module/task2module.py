@@ -81,3 +81,55 @@ def exhaustive_search2d(func, leftx=0, rightx=1, lefty=0, righty=1, eps=1e-3):
     xmin, ymin = gridx[imin], gridy[jmin]
 
     return xmin[0], ymin[0], func(xmin, ymin)[0]
+
+
+def coordinate_descent_method(func, alpha, beta, max_iterations, eps=1e-3):
+    arg_cur = (0, 0)
+    arg_prev = (0, 0)
+    func_res_cur = 0
+    func_res_prev = 0
+    i = 0
+    func_calculations = 0
+    iterations = 0
+    # there is case when coordinate descent can run forever, so there is additional condition
+    # to eliminate this problem, param max_iterations defines how many iterations
+    # will be executed if stop conditions are not met
+    while max_iterations > i:
+        i = i + 1
+        temp_arg = arg_cur
+        res = None
+        # switching to another variable as const on every iteration
+        if i % 2 == 0:
+            # using x2 as const
+            res = dichotomy_method(lambda x: func(x, arg_cur[1]), alpha, beta, eps)
+            # res[0] = min x
+            arg_cur = (res[0], arg_cur[1])
+        else:
+            # using x1 as const
+            res = dichotomy_method(lambda x: func(arg_cur[0], x), alpha, beta, eps)
+            # res[0] = min x
+            arg_cur = (arg_cur[0], res[0])
+
+        func_res_prev = func_res_cur
+        func_res_cur = res[1]
+        # including current while loop iterations
+        iterations += res[2] + 1
+        func_calculations += res[3]
+
+        arg_prev = temp_arg
+
+        # stop condition - (x[k + 1] - x[k] <= eps) OR (f(x[k+1]) - f(x[k]) <= eps)
+        if coord_diff_less_equal_to_eps(arg_prev, arg_cur, eps) or\
+                abs(func_res_cur - func_res_prev) <= eps:
+            break
+
+    if i == max_iterations:
+        print("Solution probably not found, break out of loop due to reaching max allowed iterations ("
+              + str(max_iterations) + ")")
+
+    return arg_cur, func(arg_cur[0], arg_cur[1]), iterations, func_calculations
+
+
+# returns true if difference between each coordinate is less or equal to given eps
+def coord_diff_less_equal_to_eps(left, right, eps):
+    return abs(right[0] - left[0]) <= eps and abs(right[1] - left[1]) <= eps
