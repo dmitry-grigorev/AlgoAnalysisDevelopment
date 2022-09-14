@@ -7,7 +7,7 @@ invphi2 = (3 - np.sqrt(5)) / 2
 
 def exhaustive_search(func, left=0, right=1, eps=1e-3):
     niters, fcalcs = 0, 0
-    grid = np.linspace(left, right, int(1 / eps) + 1)
+    grid = np.linspace(left, right, int((right - left) / eps) + 1).tolist()
     xmin = left
     fmin = func(left)
     fcalcs += 1
@@ -16,8 +16,7 @@ def exhaustive_search(func, left=0, right=1, eps=1e-3):
         f = func(x)
         fcalcs += 1
         if f < fmin:
-            xmin = x
-            fmin = f
+            xmin, fmin = x, f
     return xmin, fmin, niters, fcalcs
 
 
@@ -67,23 +66,29 @@ def goldenratio_method(func, left=0, right=1, eps=1e-3):
     return xmin, func(xmin), niters, fcalcs
 
 
-def exhaustive_search2d(func, leftx=0, rightx=1, lefty=0, righty=1, eps=1e-3):
-    gridx = np.linspace(leftx, rightx, int(1 / eps) + 1)
-    gridy = np.linspace(lefty, righty, int(1 / eps) + 1)
+def exhaustive_search2d(func, leftx=0, rightx=1, lefty=0, righty=1, eps=1e-3, optpoint=None):
+    gridx = np.linspace(leftx, rightx, int((rightx - leftx) / eps) + 1).tolist()
+    gridy = np.linspace(lefty, righty, int((righty - lefty) / eps) + 1).tolist()
 
-    # to do: make gridx x gridy product, calculate func on it and finc minimum and its point
+    niters, fcalcs = 0, 0
+    xmin, ymin = gridx[0], gridy[0]
+    fmin = np.infty
 
-    gridxy = np.meshgrid(gridx, gridy)
-    gridf = func(*gridxy)
+    for i in range(len(gridx)):
+        for j in range(len(gridy)):
+            niters += 1
+            f = func(gridx[i], gridy[j])
+            fcalcs += 1
+            if f < fmin:
+                xmin, ymin, fmin = gridx[i], gridy[j], f
 
-    jmin, imin = np.where(gridf == np.min(gridf))
+    if optpoint is None:
+        return (xmin, ymin), fmin, niters, fcalcs, None
+    else:
+        return (xmin, ymin), fmin, niters, fcalcs, np.sqrt((xmin - optpoint[0])**2 + (ymin - optpoint[1])**2)
 
-    xmin, ymin = gridx[imin], gridy[jmin]
 
-    return xmin[0], ymin[0], func(xmin, ymin)[0]
-
-
-def coordinate_descent_method(func, alpha, beta, max_iterations, eps=1e-3):
+def coordinate_descent_method(func, alpha=0, beta=1, max_iterations=1000, eps=1e-3, optpoint=None):
     arg_cur = (0, 0)
     arg_prev = (0, 0)
     func_res_cur = 0
@@ -95,7 +100,7 @@ def coordinate_descent_method(func, alpha, beta, max_iterations, eps=1e-3):
     # to eliminate this problem, param max_iterations defines how many iterations
     # will be executed if stop conditions are not met
     while max_iterations > i:
-        i = i + 1
+        i += 1
         temp_arg = arg_cur
         res = None
         # switching to another variable as const on every iteration
@@ -119,7 +124,7 @@ def coordinate_descent_method(func, alpha, beta, max_iterations, eps=1e-3):
         arg_prev = temp_arg
 
         # stop condition - (x[k + 1] - x[k] <= eps) OR (f(x[k+1]) - f(x[k]) <= eps)
-        if coord_diff_less_equal_to_eps(arg_prev, arg_cur, eps) or\
+        if coord_diff_less_equal_to_eps(arg_prev, arg_cur, eps) or \
                 abs(func_res_cur - func_res_prev) <= eps:
             break
 
@@ -127,9 +132,17 @@ def coordinate_descent_method(func, alpha, beta, max_iterations, eps=1e-3):
         print("Solution probably not found, break out of loop due to reaching max allowed iterations ("
               + str(max_iterations) + ")")
 
-    return arg_cur, func(arg_cur[0], arg_cur[1]), iterations, func_calculations
+    if optpoint is None:
+        return arg_cur, func(arg_cur[0], arg_cur[1]), iterations, func_calculations, None
+    else:
+        return arg_cur, func(arg_cur[0], arg_cur[1]), iterations, func_calculations, \
+               np.sqrt((arg_cur[0] - optpoint[0])**2 + (arg_cur[1] - optpoint[1])**2)
 
 
 # returns true if difference between each coordinate is less or equal to given eps
 def coord_diff_less_equal_to_eps(left, right, eps):
     return abs(right[0] - left[0]) <= eps and abs(right[1] - left[1]) <= eps
+
+
+def squares(x: np.ndarray, y: np.ndarray):
+    return np.sum(np.square(x - y))
