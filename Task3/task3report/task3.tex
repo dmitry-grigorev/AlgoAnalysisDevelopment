@@ -1,0 +1,232 @@
+\documentclass[12pt, bachelor, substylefile = algo_title.rtx]{disser}
+
+\usepackage[a4paper,
+            left=3cm, right=1.5cm,
+            top=2cm, bottom=2cm,
+	 headsep=1cm, footskip=1cm]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{hyperref}
+\usepackage{amsfonts}
+%\usepackage{indentfirst}
+\usepackage{xcite}
+\usepackage{xr}
+\usepackage{outlines}
+\usepackage{mathtools}
+\usepackage{subcaption}
+%\usepackage{newtxtext,newtxmath}
+\usepackage[final]{pdfpages}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\newcommand{\Hyp}{\ensuremath{\mathbb{H}}}
+\newcommand{\Pb}{\mathcal{P}}
+\newcommand{\ME}{\mathbb{E}}
+\newcommand{\med}{\mathbb{M}}
+\newcommand{\Proba}{\mathbb{P}}
+\newcommand{\VAR}{\mathbb{D}}
+\newcommand{\varD}{\mathbf{D}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\varZ}{\mathbf{Z}}
+\newcommand{\varV}{\mathbf{V}}
+\newcommand{\varW}{\mathbf{W}}
+\newcommand{\varY}{\mathbf{Y}}
+\newcommand{\varX}{\mathbf{X}}
+\newcommand{\varR}{\mathbf{R}}
+\newcommand{\varS}{\mathbf{S}}
+\newcommand{\varU}{\mathbf{U}}
+\newcommand{\ind}{\mathbb{I}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Sample}{\varV_1,\varV_2,\dots,\varV_m}
+\newcommand{\Samplex}{\varX_1,\varX_2,\dots,\varX_n}
+\DeclareMathOperator{\sign}{sign}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{lemma}{Lemma}
+\newtheorem{example}{Example}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conseq}{Consequence}
+
+\setcounter{tocdepth}{2}
+
+
+\begin{document}
+
+\institution{FEDERAL STATE AUTONOMOUS EDUCATIONAL INSTITUTION\\
+OF HIGHER EDUCATION\\
+ITMO UNIVERSITY
+}
+\title{Report\\
+on the practical task No. 3}
+
+
+\topic{\normalfont\scshape %
+Algorithms for unconstrained nonlinear optimization.\\ First- and second order
+methods}
+\author{Dmitry Grigorev, Maximilian Golovach}
+\group{J4133c}
+\sa{Dr Petr Chunaev}
+\sastatus {}
+
+\city{St. Petersburg}
+\date{2022}
+
+\maketitle
+\section{Goal of the work}
+The goal of this work is compound and consists of the following points:
+\begin{outline}
+\1 to become familiar with first- and second order methods in the problem of unconstrained nonlinear optimization;
+\1 to apply the methods on the practical problem and compare them with each other;
+\1 to compare the obtained results with the results of Task 2.
+\end{outline}
+
+\section{Formulation of the problem}
+\label{sec: probsetup}
+Let $\alpha,\ \beta \in (0, 1)$ are two arbitrary values, $x_k = \frac{k}{100},\ k  = 0, \dots, 100$ and $y_k$ are defined by i.i.d.~$\delta_k \sim N(0, 1) $ according to the following rule:
+\[ y_k = \alpha x_k + \beta + \delta_k.\]
+
+Given such two parametrized families of functions as:
+\begin{outline}[enumerate]
+\1 $F(x, a, b) = ax + b$,
+\1 $F(x, a, b) = \frac{a}{1+bx}$,
+\end{outline}
+we need to find the optimal function for given data $(x_k, y_k)_{k = 0}^{100}$ according to the least squares:
+\[ D(a, b) = \sum_{k=0}^{100} (F(x_k, a, b) - y_k)^2 \]
+using
+\begin{outline}
+\1 gradient descent,
+\1 conjugate gradient descent,
+\1 Newton's method,
+\1 Levenberg-Marquardt method.
+\end{outline}
+
+All functions which will be obtained have to be visualized with the given data and the line which generates these data. Furthermore, we have to compare the algorithms in terms of precision, number of iterations and number of function evaluations using the results.
+
+\section{Brief theoretical part}
+
+Suppose that we are given with a function $f:\ G \subset \Real^n \to \Real$ where $G$ is connected open set in $\Real^n$. We need to minimize this function on $G$.
+
+\subsection{Gradient descent method}
+Let the function $f$ to be once continuously differentiable on $G$ ($f \in C^1(G)$). The gradient descent method utilizes the fundamental fact that the gradient of function $\nabla f$ in a point is directed towards the fastest growth of the function among all other directions (\textbf{steepest ascent}) and, vice versa, $-\nabla f$ --- the direction of the \textbf{steepest descent}. At each step of the algorithm next point is resulted by moving from the previous point in the direction of the antigradient at this point. 
+
+The gradient descent has such parameters as initial point $x_0$ and $\alpha$ which is called. \textbf{learning rate}.
+
+The problems of this algorithm: 
+--- prone to criss-cross pattern of moves between two consequential points in the valleys of function what slows the rate of convergence.
+--- near the points where $\nabla f(x) \approx 0$ the convergence is slow.
+
+\begin{algorithm}[h]
+\caption{Gradient descent method algorithm}
+\label{alg: graddesc}
+\begin{algorithmic}
+
+\Require $f \in C^1(G)$, $x_0 \in G$ --- initial point, $\eps>0$ --- precision. 
+
+\State $k \gets 0$
+\While{$\|x_k - x_{k-1}\| > \eps$}
+\State $k \gets k+1$
+\State $x_k \gets x_{k-1} - \alpha \nabla f(x_{k-1})$
+\EndWhile
+\Ensure $\widehat{x} = x_k$ --- point of local minimum or critical point
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Conjugate gradient descent}
+Originally, the conjugate optimization method was introduced for solving the linear system of equations problem with symmetric positive-definite matrix. The main idea of this method is that the twice differentiable function with non-degenerate second derivative at given point behaves like a quadratic paraboloid. 
+
+Let $f \in C^2(G)$, $H = \frac{d^2 f}{dx^2}$ and we are given with an initial point $x_0 \in G$ and precision $\eps > 0$. At each step in point $x_k$ the algorithm uses not only the direction of the steepest descent $-\nabla f(x_k)$ but the additional direction $s_k$ which is conjugated to $s_{k-1}$ in the sense of orthogonality with respect to $\mathbf{H}_{k-1} = H(x_{k-1})$:
+\[ s_k ^{T} \mathbf{H}_{k-1} s_{k-1} = 0. \]
+The conjugacy is obtained by means of the following equation which defines $s_k$:
+\[ s_k = -\nabla f(x_k) + \beta_k s_{k-1}. \]
+
+\begin{algorithm}[h]
+\caption{Conjugate gradient descent algorithm}
+\label{alg: conjgrad}
+\begin{algorithmic}
+
+\Require $f \in C^2(G)$, $H = \frac{d^2 f}{dx^2}$, $x_0 \in G$ --- initial point, $\eps>0$ --- precision. 
+
+\State $k \gets 0$
+\State $g_0 \gets -\nabla f(x_0)$
+\State $s_0 \gets g_0$
+\State $\alpha_0 \gets \arg \min_{\alpha>0} f(x_0 + \alpha s_0)$
+\State $x_1 \gets x_0 + \alpha_0 s_0$
+\While{$\|x_k - x_{k-1}\| > \eps$}
+\State $k \gets k+1$
+\State $g_k \gets -\nabla f(x_k)$
+\State Obtain $\beta_k$ from the known formula (see below)
+\State $s_k \gets g_k + \beta_k s_{k-1}$
+\State $\alpha_k \gets \arg \min_{\alpha>0} f(x_k + \alpha s_k)$
+\State $x_k \gets x_k + \alpha_k s_k$
+\EndWhile
+\Ensure $\widehat{x}$ --- point of local minimum or critical point
+\end{algorithmic}
+\end{algorithm}
+
+
+There are several ways to calculate $\beta_n$. The classical one is \textbf{Fletcher-Reeves}:
+\[ \beta_k = \frac{g^T_k g_k}{g^T_{k-1} g_{k-1}} \]
+The another one is \textbf{Polak–Ribière}:
+\[ \beta_k = \frac{g^T_k (g_k - g_{k-1})}{g^T_{k-1} g_{k-1}} \]
+The advantage in using Polak–Ribiere formula is that it automatically reset its moves (i.e. $s_k \approx g_k$) when when little progress is made over the last iteration. This property can speed up the convergence near the solution point \cite{cavazzuti13}.
+
+The conjugate gradient methods have such an advantage as no matrix operations are required in their algorithms but they are not robust. These methods fix the problem of gradient descent with behavior in function valleys.
+
+\subsection{Newton's method}
+Newton's method is the representative of \textbf{Trust region approach algorithms}. The trust region approach assumes that the objective function $f$ is well approximated by a quadratic function $q_k (\delta)$ obtained by truncating the Taylor series for $f(x_k + \delta)$. In the case of Newton's approach $q_k$ is as follows:
+\[ f(x_k + \delta) \approx q_k(\delta) = f(x_k) + g_k^T \delta + \frac{1}{2} \delta^T \mathbf{H}_k \delta, \]
+where $g_k = \nabla f(x_k)$, $\mathbf{H}_k = H(x_k) = \frac{d^2 f}{dx^2}(x_k)$. The next point $x_{k+1}$ is resulted from the minimization of $q_k(\delta)$ which is equivalent to solving the system $\mathbf{H}_k \delta = -g_k$.
+
+\begin{algorithm}[h]
+\caption{Newton's method algorithm}
+\label{alg: newton}
+\begin{algorithmic}
+
+\Require $f \in C^2(G)$, $H = \frac{d^2 f}{dx^2}$, $x_0 \in G$ --- initial point, $\eps>0$ --- precision. 
+
+\State $k \gets 0$
+\While{$\|x_k - x_{k-1}\| > \eps$}
+\State $g_k \gets \nabla f(x_k)$
+\State $\mathbf{H}_k \gets H(x_k)$
+\State $\delta_k \gets -\mathbf{H}^{-1}_k g_k$
+\State $k \gets k+1$
+\State $x_k \gets x_{k-1} + \delta_{k-1}$
+\EndWhile
+\Ensure $\widehat{x}$ --- point of local minimum or critical point
+\end{algorithmic}
+\end{algorithm}
+
+Newton’s method may fail to converge when $\mathbf{H}_k$ is not positive definite.
+
+\subsection{Levenberg-Marquardt method}
+Levenberg-Marquadt method is called to solve the problem of Newton's method in non-guaranteed positive definiteness of $\mathbf{H}_k$. Here $\delta_k$ is computed from the system:
+\[ (\mathbf{H}_k + \nu \mathbf{I})\delta_k = -g_k, \]
+where $\nu \ge 0$ is chosen so that the matrix $\mathbf{H}_k + \nu \mathbf{I}$ is positive definite.
+
+\section{Results}
+
+\section{Data structures and design techniques used in algorithms}
+
+
+In the implementation of the algorithms and for random variables generation the Python's package Numpy is used since it allows to vectorize calculations what accelerates the evaluations.
+
+
+\section{Conclusion}
+As the result of this work, we considered direct methods of optimization in the cases of one and two variables. The methods were compared by the number of iterations required to obtain the solution with given precision, the number of function evaluations and precision. All of the considered methods except Nelder-Mead method were implemented in Python programming language.
+Discussion for data structures and design techniques which were used in the implementations is provided. The work goals were achieved.
+
+\section{Appendix}
+Algorithms implementation code is provided in \cite{repogithub}.
+
+{\small \bibliography{biblio}}
+\bibliographystyle{gost2008}
+
+\end{document}
