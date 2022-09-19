@@ -197,8 +197,8 @@ where $g_k = \nabla f(x_k)$, $\mathbf{H}_k = H(x_k) = \frac{d^2 f}{dx^2}(x_k)$. 
 \State $g_k \gets \nabla f(x_k)$
 \State $\mathbf{H}_k \gets H(x_k)$
 \State $\delta_k \gets -\mathbf{H}^{-1}_k g_k$
+\State $x_{k+1} \gets x_{k} + \delta_{k}$
 \State $k \gets k+1$
-\State $x_k \gets x_{k-1} + \delta_{k-1}$
 \EndWhile
 \Ensure $\widehat{x}$ --- point of local minimum or critical point
 \end{algorithmic}
@@ -225,6 +225,8 @@ Discussion for data structures and design techniques which were used in the impl
 
 \section{Appendix}
 Algorithms implementation code is provided in \cite{repogithub}.
+
+\nocite{Deisenroth2020}
 
 {\small \bibliography{biblio}}
 \bibliographystyle{gost2008}
