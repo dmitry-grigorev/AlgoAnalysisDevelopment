@@ -1,0 +1,193 @@
+\documentclass[12pt, bachelor, substylefile = algo_title.rtx]{disser}
+
+\usepackage[a4paper,
+            left=3cm, right=1.5cm,
+            top=2cm, bottom=2cm,
+	 headsep=1cm, footskip=1cm]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{hyperref}
+\usepackage{amsfonts}
+%\usepackage{indentfirst}
+\usepackage{xcite}
+\usepackage{xr}
+\usepackage{outlines}
+\usepackage{mathtools}
+\usepackage{subcaption}
+%\usepackage{newtxtext,newtxmath}
+\usepackage[final]{pdfpages}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\newcommand{\Hyp}{\ensuremath{\mathbb{H}}}
+\newcommand{\Pb}{\mathcal{P}}
+\newcommand{\ME}{\mathbb{E}}
+\newcommand{\med}{\mathbb{M}}
+\newcommand{\Proba}{\mathbb{P}}
+\newcommand{\VAR}{\mathbb{D}}
+\newcommand{\varD}{\mathbf{D}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\varZ}{\mathbf{Z}}
+\newcommand{\varV}{\mathbf{V}}
+\newcommand{\varW}{\mathbf{W}}
+\newcommand{\varY}{\mathbf{Y}}
+\newcommand{\varX}{\mathbf{X}}
+\newcommand{\varR}{\mathbf{R}}
+\newcommand{\varS}{\mathbf{S}}
+\newcommand{\varU}{\mathbf{U}}
+\newcommand{\ind}{\mathbb{I}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Sample}{\varV_1,\varV_2,\dots,\varV_m}
+\newcommand{\Samplex}{\varX_1,\varX_2,\dots,\varX_n}
+\DeclareMathOperator{\sign}{sign}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{lemma}{Lemma}
+\newtheorem{example}{Example}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conseq}{Consequence}
+
+\setcounter{tocdepth}{2}
+
+
+\begin{document}
+
+\institution{FEDERAL STATE AUTONOMOUS EDUCATIONAL INSTITUTION\\
+OF HIGHER EDUCATION\\
+ITMO UNIVERSITY
+}
+\title{Report\\
+on the practical task No. 4}
+
+
+\topic{\normalfont\scshape %
+Algorithms for unconstrained nonlinear optimization. Stochastic and
+metaheuristic algorithms}
+\author{Dmitry Grigorev, Maximilian Golovach}
+\group{J4133c}
+\sa{Dr Petr Chunaev}
+\sastatus {}
+
+\city{St. Petersburg}
+\date{2022}
+
+\maketitle
+\section{Goal of the work}
+The goal of this work consists of the following points:
+\begin{outline}
+\1 to become familiar with some stochastic and metaheuristic algorithms in the context of nonlinear optimization problems;
+\1 to apply the methods on practical problems and compare them with each other;
+\1 besides, to apply Nelder-Mead and Levenberg-Marquardt algorithms to these problems and compare obtained results with results of the metaheuritic algorithms.
+\end{outline}
+
+\section{Formulation of the problem}
+\label{sec: probsetup}
+In this task here are two problems under consideration:
+\subsection{Problem \textit{I}}
+Let $x_k = \frac{3k}{1000},\ k = 0, \dots, 1000$ and $y_k$ are defined as follows with i.i.d. $\delta_k \sim N(0, 1)$:
+\[ y_k = \left.
+\begin{cases}
+-100+\delta_k &\ \text{if}\ f(x_k) < -100,\\
+100+\delta_k &\ \text{if}\ f(x_k) > 100,\\
+f(x_k)+\delta_k &\ \text{otherwise},
+\end{cases} \right.\]
+where $f(x) = \frac{1}{x^2-3x+2}$ --- rational function with two vertical asymptotes $x = 1$ and $x = 2$. The problem is to approximate the generated data $(x_k, y_k)_{k = 0}^{1000}$ by rational function 
+\[ F(x, a, b, c, d) = \frac{ax+b}{x^2+cx+d} \]
+which optimally fits the data in the sense of least squares
+\[ D(a, b, c, d) = \sum_{k=0}^{1000} (F(x_k, a, b, c, d) - y_k)^2 \to \min_{(a, b, c ,d)}. \]
+The solution has to be found with precision $\eps  = 10^{-3}$ in at most $1000$ iterations. 
+
+\subsection{Problem \textit{II}}
+Given the data from \url{https://people.sc.fsu.edu/~jburkardt/datasets/cities/cities.html} with at least 15 cities having land transport connections between them, we have to tackle the corresponding Travelling Salesman Problem.
+
+These two problems has to be tackled with both stochastic and metaheuristic algorithms such as:
+\begin{outline}
+\1 Simulated Annealing,
+\1 Particle Swarm,
+\1 Differential Evolution
+\end{outline}
+and deterministic Nelder-Mead and Levenberg-Marquardt algorithms.
+
+All functions which will be obtained have to be visualized with the given data and the line which generates these data. Furthermore, we have to compare the algorithms in terms of precision, number of iterations and number of function evaluations using the results.
+
+\section{Brief theoretical part}
+The theory is taken from \cite{cavazzuti13}.
+
+Suppose that we are given with a function $f:\ G \subset \Real^n \to \Real$ where $G$ is connected open set in $\Real^n$. We need to minimize this function on $G$.
+
+\subsection{Simulated Annealing}
+The name of this algorithm comes from annealing in metallurgy: a technique involving heating and controlled cooling of a material to increase the size of its crystals and reduce their defects.
+
+The optimization here starts from evaluating the value of the objective function $f(x_0)$
+at an initial random point $x_0 \in G$. At each step the next point $x_k$ is obtained from the current temperature $T_k$ which describes the mobility of moves from $x_{k-1}$ to $x_k$. There are lots of rules to get to $x_k$ from the previous point. One of them is as follows:
+\[ x^{(i)}_{k} = x^{(i)}_{k-1} + \left((x^{(i)}_{\max} - x^{(i)}_{k-1})r^{(i)}_{k-1} + (x^{(i)}_{\min} - x^{(i)}_{k-1})s^{(i)}_{k-1}\right) \frac{T_{k-1}}{T_0},\ i = 1, \dots, n ,\]
+where $r^{(i)}_{k-1},\ s^{(i)}_{k-1} \sim U(0, 1)$ are i.i.d (with respect to both upper and lower indices) uniformly distributed random variables and $x^{(i)}_{\min}$ and $x^{(i)}_{\max}$ define the search range for the solution. There are also lots of ways to define the rule to which the sequence $\{T_k\}$ obeys. Here we consider the following one with the \textbf{annealing coefficient} $p \ge 1$:
+\[ T_k = T_0 \left(1 - \frac{k - 1}{k_{\max} - 1}\right)^p, \]
+where $k_{\max}$ is the maximum number of iterations. We accept the new point $x_k$ if $f(x_k) \le f(x_{k-1})$ (however, the are also a number of ways to accept the new point but we limited ourselves on this one).
+
+\subsection{Differential Evolution}
+Let we have an initial population $x^{(0)}_1, \dots, x^{(0)}_m \in G$ of constant volume $m$. At each iteration for each $j = 1, \dots, m$ \textbf{mutant individual} $v^{(k)}_i$ is obtained from the elements of previous population $x^{(k-1)}_1, \dots, x^{(k-1)}_m$. There are a large variety of ways to produce $v^{(k)}_i$:
+\begin{align}
+v^{(k)}_i & = x^{(k-1)}_i + K (x^{(k-1)}_a - x^{(k-1)}_i) + F(x^{(k-1)}_b - x^{(k-1)}_c);\\
+v^{(k)}_i & = x^{(k-1)}_i + F(x^{(k-1)}_b - x^{(k-1)}_c);\\
+v^{(k)}_i & = x^{(k-1)}_a + F(x^{(k-1)}_b - x^{(k-1)}_c);\\
+v^{(k)}_i & = x^{(k-1)}_{\text{best}} + F(x^{(k-1)}_b - x^{(k-1)}_c);\\
+v^{(k)}_i & = x^{(k-1)}_i + K (x^{(k-1)}_{\text{best}} - x^{(k-1)}_i) + F(x^{(k-1)}_b - x^{(k-1)}_c);\\
+v^{(k)}_i & = x^{(k-1)}_{\text{best}} + K (x^{(k-1)}_a - x^{(k-1)}_b) + F(x^{(k-1)}_c - x^{(k-1)}_d);\\
+v^{(k)}_i & = x^{(k-1)}_a+ K (x^{(k-1)}_b - x^{(k-1)}_c) + F(x^{(k-1)}_d - x^{(k-1)}_e);
+\end{align}
+where $x^{(k-1)}_{best}$ is the best (in terms of value of function $f$) individual of $(k-1)$-th generation, $a,b,c,d,e$ are randomly chosen different numbers from the set $\{1,\dots, i-1, i+1, \dots, m\}$, $0\le K \le 1$ is the \textbf{combination factor} and $0 \le F \le 1$ is the \textbf{scaling factor}. As soon as the mutants are obtained, the \textbf{trial individuals} $u^{(k)}_1, \dots, u^{(k)}_m$ are created in the process of \textbf{cross-over} with its constant $C \in [0, 1]$:
+\[ u^{(k)}_{i\,j} = 
+\begin{cases}
+u^{(k)}_{i\,j} &\ \text{if}\ r^{(k)}_{i\,j} \le C\ \text{or}\ j  \ne s^{(k)}_{i\,j}\\
+x^{(k-1)}_{i\,j} &\ \text{otherwise},
+\end{cases}
+ \]
+where $r^{(k)}_{i\,j} \sim U(0, 1)$, $s^{(k)}_{i\,j}$ is $j$-th element in the vector $s^{(k)}_{i}$ which is a random permutation of the set $\{1, \dots, m\}$. In other words, the trial individual has some components of the mutant individual and at least one component of its parents $x^{(k-1)}_{i}$. 
+Then the new generation is produced:
+\[ x^{(k-1)}_{i} = 
+\begin{cases}
+u^{(k)}_{i} &\ \text{if}\ f( x^{(k-1)}_{i}) \ge  f(u^{(k)}_{i}),\\
+x^{(k-1)}_{i} &\ \text{otherwise}.
+\end{cases}
+ \]
+Common choice of parameters is as follows: $C = 0.9,\ F = K = 0.8$. Moreover, the larger is $m$ and the smaller are $F$ and $K$ then the more robust is the algorithm and the more expensive is the optimization process.
+
+\subsection{Particle Swarm}
+This method replicates the behavior of birds looking for food and following the leader. The idea is that each individual in in the swarm knows both its own best position and best position of the whole swarm.
+
+Let we are given with an initial population $x^{(0)}_1, \dots, x^{(0)}_m$ of size $m$. At each iteration the position of the $i$-th individual is calculated with respect to the formula: 
+\[ x^{(k)}_i = x^{(k-1)}_i + v^{(k)}_i, \]
+where $v^{(k)}_i$ is the velocity of $i$-th individual which is the function of previous velocity $v^{(k-1)}_i$, $i$-th individual's best position $\widetilde{x}_i$ and the population's best position $\widetilde{x}$:
+\[ v^{(k)}_i =  W v^{(k-1)}_i + C_1 r_1 (\widetilde{x}_i - x^{(k-1)}_i) + C_2 r_2(\widetilde{x} - x^{(k-1)}_i),\]
+where $r_1,r_2 \sim U(0, 1)$ are the random variables, $C_1$ is the \textbf{cognitive factor}, $C_2$ is the \textbf{social factor} and $W$ is the \textbf{inertia factor}.
+
+\section{Results}
+
+\section{Data structures and design techniques used in algorithms}
+
+
+In the implementation of the algorithms and for random variables generation the Python's package Numpy is used since it allows to vectorize calculations what accelerates the evaluations.
+
+
+\section{Conclusion}
+As the result of this work, we considered direct methods of optimization in the cases of one and two variables. The methods were compared by the number of iterations required to obtain the solution with given precision, the number of function evaluations and precision. All of the considered methods except Nelder-Mead method were implemented in Python programming language.
+Discussion for data structures and design techniques which were used in the implementations is provided. The work goals were achieved.
+
+\section{Appendix}
+Algorithms implementation code is provided in \cite{repogithub}.
+
+\nocite{Deisenroth2020}
+
+{\small \bibliography{biblio}}
+\bibliographystyle{gost2008}
+
+\end{document}
