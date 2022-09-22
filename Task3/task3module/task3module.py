@@ -120,7 +120,7 @@ def conjugate_gradient_method(f, f_grad, init, method='FR', c1=1e-4, c2=0.1, ama
         gf_new = f_grad(x_new)
 
         # calculate beta
-        # TODO maybe choose only one of methods?
+        # TODO maybe choose only one of methods? Seems like PR method is OK
         if method == 'FR':
             beta = np.dot(gf_new, gf_new) / np.dot(gfk, gfk)
         elif method == 'PR':
