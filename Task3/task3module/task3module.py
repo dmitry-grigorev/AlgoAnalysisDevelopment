@@ -1,7 +1,119 @@
 import numpy as np
+from Task2.task2module.task2module import goldenratio_method
+from _collections_abc import Sequence
 
 
-def gradient_descent_method(f, f_grad, init, alpha=1, tol=1e-5, max_iter=1000, print_logs=False):
+def squares(x, y):
+    return np.sum(np.square(x - y))
+
+
+def belongs(x: np.ndarray, area: np.ndarray):
+    return np.all(x > area[:, 0]) and np.all(x < area[:, 1])
+
+
+def projectiononborder(x: np.ndarray, area):
+    areacenter = (area[:, 0] + area[:, 1]) / 2
+    y = np.subtract(x, areacenter)
+    absx = np.abs(y)
+    imaxdiff = np.where(absx == np.max(absx))
+    maxdiff = absx[imaxdiff]
+    size = (area[:, 1] - area[:, 0])[imaxdiff]
+    return areacenter + y * size / maxdiff / 2
+
+
+"""
+This function implements Newton's method of optimization.
+Function 'func' have to be vectorized over its arguments.
+limits describes rectangle, it is an array with n x 2 dimensions.
+If optimal point 'optpoint' is provided, this function provides l2-norm precision. 
+rtaparam (Return to the area parameter) let us to find appropriate solution in the direction in which
+the optimization process left the given area. 
+"""
+
+
+def newtons(func, limits, x0, funcgrad, funchess, eps=1e-3, rtaparam = 0.01, optpoint=None):
+    curr, prev, delta = x0, None, None
+    niters, fcalcs, gradcalcs, hesscalcs, matrixinvers = 0, 0, 0, 0, 0
+    while (prev is None or np.linalg.norm(curr - prev) > eps) and belongs(curr, limits):
+        g, H = funcgrad(curr), funchess(curr)
+        delta = -np.linalg.inv(H) @ g
+        prev = curr
+        curr = curr + delta
+        niters += 1
+        matrixinvers += 1
+        gradcalcs += 1
+        hesscalcs += 1
+
+    calcsstats = {"iterations": niters,
+                  "funccalcs": fcalcs,
+                  "gradcalcs": gradcalcs,
+                  "hesscalcs": hesscalcs,
+                  "matrixinversions": matrixinvers}
+
+    while not belongs(curr, limits):
+        curr -= rtaparam*delta
+
+    if optpoint is None:
+        return curr, func(curr), calcsstats, None
+    else:
+        return curr, func(curr), calcsstats, np.linalg.norm(curr - optpoint)
+
+
+"""
+This function implements Levenberg-Marquardt method of optimization.
+Function 'func' have to be vectorized over its arguments.
+limits describes rectangle, it is an array with n x 2 dimensions.
+Parameter of this method regulpar might be either a number or a tuple two numbers.
+In the case of tuple, this parameter specify the segment for line-search of optimal parameter.
+If optimal point 'optpoint' is provided, this function provides l2-norm precision. 
+rtaparam (Return to the area parameter) let us to find appropriate solution in the direction in which
+the optimization process left the given area. 
+"""
+
+
+def levenmarq(func, limits, x0, regulpar: Sequence[int, float, tuple[float, float]],
+              funcgrad, funchess, eps=1e-3, rtaparam = 0.01, optpoint=None):
+    curr, prev = x0, None
+    delta = None
+    niters, fcalcs, gradcalcs, hesscalcs, matrixinvers = 0, 0, 0, 0, 0
+    n = x0.shape[0]
+    identitymatrix = np.eye(N=n, dtype=float)
+
+    while (prev is None or np.linalg.norm(curr - prev) > eps) and belongs(curr, limits):
+        g, H = funcgrad(curr), funchess(curr)
+        gradcalcs += 1
+        hesscalcs += 1
+        if isinstance(regulpar, float) or isinstance(regulpar, int):
+            delta = -np.linalg.inv(H + regulpar * identitymatrix) @ g
+            matrixinvers += 1
+        elif isinstance(regulpar, tuple):
+            linesearchres = goldenratio_method(lambda nu: func(-np.linalg.inv(H + nu * identitymatrix) @ g),
+                                               left=regulpar[0], right=regulpar[1])
+            fcalcs += linesearchres[3]
+            delta = -np.linalg.inv(H + linesearchres[0] * identitymatrix) @ g
+            matrixinvers += (1 + linesearchres[2])
+
+
+        prev = curr
+        curr = curr + delta
+        niters += 1
+
+    while not belongs(curr, limits):
+        curr -= rtaparam * delta
+
+    calcsstats = {"iterations": niters,
+                  "funccalcs": fcalcs,
+                  "gradcalcs": gradcalcs,
+                  "hesscalcs": hesscalcs,
+                  "matrixinversions": matrixinvers}
+
+    if optpoint is None:
+        return curr, func(curr), calcsstats, None
+    else:
+        return curr, func(curr), calcsstats, np.linalg.norm(curr - optpoint)
+
+
+def gradient_descent_method(f, funcgrad, x0, alpha=1, eps=1e-5, max_iter=1000, print_logs=False):
     """Gradient descent method for unconstraint optimization problem.
     given a starting point x ∈ Rⁿ,
     repeat
@@ -14,13 +126,13 @@ def gradient_descent_method(f, f_grad, init, alpha=1, tol=1e-5, max_iter=1000, p
     --------------------
     f : callable
         Function to be minimized.
-    f_grad : callable
+    funcgrad : callable
         The first derivative of f.
-    init : array
+    x0 : array
         initial value of x.
     alpha : scalar, optional
         the initial value of steplength.
-    tol : float, optional
+    eps : float, optional
         tolerance for the norm of f_grad.
     max_iter : integer, optional
         maximum number of steps.
@@ -33,9 +145,9 @@ def gradient_descent_method(f, f_grad, init, alpha=1, tol=1e-5, max_iter=1000, p
         f(x) in the learning path
     """
     # initialize x, f(x), and f'(x)
-    xk = init
+    xk = x0
     fk = f(xk)
-    gfk = f_grad(xk)
+    gfk = funcgrad(xk)
     gfk_norm = np.linalg.norm(gfk)
     # initialize number of steps, save x and f(x)
     num_iter = 0
@@ -44,13 +156,13 @@ def gradient_descent_method(f, f_grad, init, alpha=1, tol=1e-5, max_iter=1000, p
     if print_logs:
         print('Initial condition: y = {:.4f}, x = {} \n'.format(fk, xk))
     # take steps
-    while gfk_norm > tol and num_iter < max_iter:
+    while gfk_norm > eps and num_iter < max_iter:
         # determine direction
         pk = -gfk
         # calculate new x, f(x), and f'(x)
         alpha, fk = armijo_line_search(f, xk, pk, gfk, fk, alpha0=alpha)
         xk = xk + alpha * pk
-        gfk = f_grad(xk)
+        gfk = funcgrad(xk)
         gfk_norm = np.linalg.norm(gfk)
         # increase number of steps by 1, save new x and f(x)
         num_iter += 1
@@ -68,8 +180,9 @@ def gradient_descent_method(f, f_grad, init, alpha=1, tol=1e-5, max_iter=1000, p
     return np.array(curve_x), np.array(curve_y)
 
 
-def conjugate_gradient_method(f, f_grad, init, method='FR', c1=1e-4, c2=0.1, amax=None, tol=1e-5, max_iter=1000, print_logs=False):
-    """Non Linear Conjugate Gradient Method for optimization problem.
+def conjugate_gradient_method(f, funcgrad, x0, c1=1e-4, c2=0.1, amax=None, eps=1e-5, max_iter=1000,
+                              print_logs=False):
+    """Non-Linear Conjugate Gradient Method for optimization problem.
     Given a starting point x ∈ ℝⁿ.
     repeat
         1. Calculate step length alpha using Wolfe Line Search.
@@ -81,13 +194,13 @@ def conjugate_gradient_method(f, f_grad, init, method='FR', c1=1e-4, c2=0.1, ama
     Parameters
     --------------------
         f        : function to optimize
-        f_grad   : first derivative of f
-        init     : initial value of x, can be set to be any numpy vector,
+        funcgrad   : first derivative of f
+        x0     : initial value of x, can be set to be any numpy vector,
         method   : method to calculate beta, can be one of the followings: FR, PR, HS, DY, HZ.
         c1       : Armijo constant
         c2       : Wolfe constant
         amax     : maximum step size
-        tol      : tolerance of the difference of the gradient norm to zero
+        eps      : tolerance of the difference of the gradient norm to zero
         max_iter : maximum number of iterations
 
     Returns
@@ -97,9 +210,9 @@ def conjugate_gradient_method(f, f_grad, init, method='FR', c1=1e-4, c2=0.1, ama
     """
 
     # initialize some values
-    x = init
+    x = x0
     y = f(x)
-    gfk = f_grad(x)
+    gfk = funcgrad(x)
     p = -gfk
     gfk_norm = np.linalg.norm(gfk)
 
@@ -111,35 +224,19 @@ def conjugate_gradient_method(f, f_grad, init, method='FR', c1=1e-4, c2=0.1, ama
         print('Initial condition: y = {:.4f}, x = {} \n'.format(y, x))
 
     # begin iteration
-    while gfk_norm > tol and num_iter < max_iter:
+    while gfk_norm > eps and num_iter < max_iter:
         # search for step size alpha
-        alpha, y_new = wolfe_line_search(f, f_grad, x, p, c1=c1, c2=c2, amax=amax)
+        alpha, y_new = wolfe_line_search(f, funcgrad, x, p, c1=c1, c2=c2, amax=amax)
 
         # update iterate x
         x_new = x + alpha * p
-        gf_new = f_grad(x_new)
+        gf_new = funcgrad(x_new)
 
         # calculate beta
         # TODO maybe choose only one of methods? Seems like PR method is OK
-        if method == 'FR':
-            beta = np.dot(gf_new, gf_new) / np.dot(gfk, gfk)
-        elif method == 'PR':
-            y_hat = gf_new - gfk
-            beta = np.dot(gf_new, y_hat) / np.dot(gfk, gfk)
-        elif method == 'HS':
-            y_hat = gf_new - gfk
-            beta = np.dot(y_hat, gf_new) / np.dot(y_hat, p)
-        elif method == 'DY':
-            y_hat = gf_new - gfk
-            beta = np.dot(gf_new, gf_new) / np.dot(y_hat, p)
-        elif method == 'HZ':
-            y_hat = gf_new - gfk
-            beta = np.dot(y_hat, gf_new) / np.dot(y_hat, p)
-            beta = beta - 2 * np.dot(y_hat, y_hat) * np.dot(p, gf_new) / (np.dot(y_hat, p) ** 2)
-        else:
-            raise ValueError(
-                'Method is unrecognizable. Try one of the following values: FR, PR, HS, DY, HZ.'
-            )
+
+        #Polak-Ribiere variant of beta
+        beta = np.dot(gf_new, gf_new - gfk) / np.dot(gfk, gfk)
 
         # update everything
         error = y - y_new
@@ -296,22 +393,6 @@ def wolfe_line_search_2(phi, derphi, c1=1e-4, c2=0.9, amax=None, maxiter=10):
     derphi_a0 = derphi0
 
     for i in range(maxiter):
-        if alpha1 == 0 or (amax is not None and alpha0 == amax):
-            # alpha1 == 0: This shouldn't happen. Perhaps the increment has
-            # slipped below machine precision?
-            alpha_star = None
-            phi_star = phi0
-            derphi_star = None
-
-            if alpha1 == 0:
-                msg = 'Rounding errors prevent the line search from converging'
-            else:
-                msg = "The line search algorithm could not find a solution " + \
-                      "less than or equal to amax: %s" % amax
-
-            print('!!! ' + msg)
-            break
-
         if (phi_a1 > phi0 + c1 * alpha1 * derphi0) or \
                 ((phi_a1 >= phi_a0) and (i > 1)):
             alpha_star, phi_star, derphi_star = \
@@ -321,13 +402,13 @@ def wolfe_line_search_2(phi, derphi, c1=1e-4, c2=0.9, amax=None, maxiter=10):
             break
 
         derphi_a1 = derphi(alpha1)
-        if (abs(derphi_a1) <= -c2 * derphi0):
+        if abs(derphi_a1) <= -c2 * derphi0:
             alpha_star = alpha1
             phi_star = phi_a1
             derphi_star = derphi_a1
             break
 
-        if (derphi_a1 >= 0):
+        if derphi_a1 >= 0:
             alpha_star, phi_star, derphi_star = \
                 _zoom(alpha1, alpha0, phi_a1,
                       phi_a0, derphi_a1, phi, derphi,
@@ -407,7 +488,7 @@ def _quadmin(a, fa, fpa, b, fb):
 def _zoom(a_lo, a_hi, phi_lo, phi_hi, derphi_lo,
           phi, derphi, phi0, derphi0, c1, c2):
     """
-    Zoom stage of approximate linesearch satisfying strong Wolfe conditions.
+    Zoom stage of approximate line-search satisfying strong Wolfe conditions.
     """
 
     maxiter = 10
@@ -420,7 +501,7 @@ def _zoom(a_lo, a_hi, phi_lo, phi_hi, derphi_lo,
         # interpolate to find a trial step length between a_lo and
         # a_hi Need to choose interpolation here. Use cubic
         # interpolation and then if the result is within delta *
-        # dalpha or outside of the interval bounded by a_lo or a_hi
+        # dalpha or outside the interval bounded by a_lo or a_hi
         # then use quadratic interpolation, if the result is still too
         # close, then use bisection
 
@@ -438,7 +519,7 @@ def _zoom(a_lo, a_hi, phi_lo, phi_hi, derphi_lo,
         # derphi_lo and phi_hi if the result is still too close to the
         # end points (or out of the interval) then use bisection
 
-        if (i > 0):
+        if i > 0:
             cchk = delta1 * dalpha
             a_j = _cubicmin(a_lo, phi_lo, derphi_lo, a_hi, phi_hi,
                             a_rec, phi_rec)
@@ -475,7 +556,7 @@ def _zoom(a_lo, a_hi, phi_lo, phi_hi, derphi_lo,
             phi_lo = phi_aj
             derphi_lo = derphi_aj
         i += 1
-        if (i > maxiter):
+        if i > maxiter:
             # Failed to find a conforming step size
             a_star = None
             val_star = None
