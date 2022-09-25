@@ -46,6 +46,9 @@
 \newcommand{\Samplex}{\varX_1,\varX_2,\dots,\varX_n}
 \DeclareMathOperator{\sign}{sign}
 
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
 \theoremstyle{definition}
 \newtheorem{theorem}{Theorem}
 \newtheorem{definition}{Definition}
@@ -117,11 +120,9 @@ Suppose that we are given with a function $f:\ G \subset \Real^n \to \Real$ wher
 \subsection{Gradient descent method}
 Let the function $f$ to be once continuously differentiable on $G$ ($f \in C^1(G)$). The gradient descent method utilizes the fundamental fact that the gradient of function $\nabla f$ in a point is directed towards the fastest growth of the function among all other directions (\textbf{steepest ascent}) and, vice versa, $-\nabla f$ --- the direction of the \textbf{steepest descent}. At each step of the algorithm next point is resulted by moving from the previous point in the direction of the antigradient at this point. 
 
-The gradient descent has such parameters as initial point $x_0$ and $\alpha$ which is called. \textbf{learning rate}.
+The gradient descent has such parameters as initial point $x_0$ and $\alpha$ which is called. \textbf{learning rate}. Researcher can both set fixed value to $\alpha$, decrease it as the progress of optimization lasts or find optimal value at each step by means of line search methods (for instance, by means of Exhaustive Search or Golden Section Search).
 
-The problems of this algorithm: 
---- prone to criss-cross pattern of moves between two consequential points in the valleys of function what slows the rate of convergence.
---- near the points where $\nabla f(x) \approx 0$ the convergence is slow.
+Despite this method is simple, it has such problems as $1)$ being prone to criss-cross pattern of moves between two consequential points in the valleys of function what slows the rate of convergence and 2) slow convergence near the points where $\nabla f(x) \approx 0$.
 
 \begin{algorithm}[h]
 \caption{Gradient descent method algorithm}
@@ -176,14 +177,14 @@ There are several ways to calculate $\beta_n$. The classical one is \textbf{Flet
 \[ \beta_k = \frac{g^T_k g_k}{g^T_{k-1} g_{k-1}} \]
 The another one is \textbf{Polak–Ribière}:
 \[ \beta_k = \frac{g^T_k (g_k - g_{k-1})}{g^T_{k-1} g_{k-1}} \]
-The advantage in using Polak–Ribiere formula is that it automatically reset its moves (i.e. $s_k \approx g_k$) when when little progress is made over the last iteration. This property can speed up the convergence near the solution point \cite{cavazzuti13}.
+The advantage in using Polak–Ribiere formula is that it automatically reset its moves (i.e. $s_k \approx g_k$) when little progress is made over the last iteration. This property can speed up the convergence near the solution point \cite{cavazzuti13}.
 
 The conjugate gradient methods have such an advantage as no matrix operations are required in their algorithms but they are not robust. These methods fix the problem of gradient descent with behavior in function valleys.
 
 \subsection{Newton's method}
 Newton's method is the representative of \textbf{Trust region approach algorithms}. The trust region approach assumes that the objective function $f$ is well approximated by a quadratic function $q_k (\delta)$ obtained by truncating the Taylor series for $f(x_k + \delta)$. In the case of Newton's approach $q_k$ is as follows:
 \[ f(x_k + \delta) \approx q_k(\delta) = f(x_k) + g_k^T \delta + \frac{1}{2} \delta^T \mathbf{H}_k \delta, \]
-where $g_k = \nabla f(x_k)$, $\mathbf{H}_k = H(x_k) = \frac{d^2 f}{dx^2}(x_k)$. The next point $x_{k+1}$ is resulted from the minimization of $q_k(\delta)$ which is equivalent to solving the system $\mathbf{H}_k \delta = -g_k$.
+where $g_k = \nabla f(x_k)$, $\mathbf{H}_k = H(x_k) = \frac{d^2 f}{dx^2}(x_k)$. The next point $x_{k+1}$ is resulted from the minimization of $q_k(\delta)$ which is equivalent to solving the system $\mathbf{H}_k \delta = -g_k$. The main assumption here is that $\mathbf{H}_k$ have to be positive definite for all $k$, otherwise the method can converge to point which is not a point of local minimum. 
 
 \begin{algorithm}[h]
 \caption{Newton's method algorithm}
@@ -209,25 +210,127 @@ Newton’s method may fail to converge when $\mathbf{H}_k$ is not positive defin
 \subsection{Levenberg-Marquardt method}
 Levenberg-Marquadt method is called to solve the problem of Newton's method in non-guaranteed positive definiteness of $\mathbf{H}_k$. Here $\delta_k$ is computed from the system:
 \[ (\mathbf{H}_k + \nu \mathbf{I})\delta_k = -g_k, \]
-where $\nu \ge 0$ is chosen so that the matrix $\mathbf{H}_k + \nu \mathbf{I}$ is positive definite.
+where $\nu \ge 0$ is chosen so that the matrix $\mathbf{H}_k + \nu \mathbf{I}$ is positive definite. This method is a combination of Newton's and Gradient Descent methods so it is possible to adjust the behavior of the algorithm depending on the properties of function in current point. It is possible to choose the optimal parameter $\nu$ by any method among line search methods:
+\[ \nu^* = \arg \min_{\nu \ge 0} f(\delta_k(\nu)),\  \delta_k(\nu) = -  (\mathbf{H}_k + \nu \mathbf{I})^{-1}g_k.\]
 
 \section{Results}
+First of all, the data $(x_k, y_k)_{k = 0}^{100}$ as required in the formulation of the problem section~\ref{sec: probsetup} are obtained with $\alpha = 0.785$ and $\beta = 0.31$. We need to approximate them by a linear function $F$ and by a rational function with precision $\eps = 10^{-3}$.
+\subsection{The case of $F(x, a, b) = ax+b$}
+The appropriate line $F(x,a,b)$ was found by means of least squares with applications of all aforementioned methods. In the graph~\ref{fig: 1} the contour plot for the function $D(a,b)$ is demonstrated. It is expected that all these methods' solutions will be close to the vertix of this paraboloid and the corresponding lines will be close to the line $\alpha x + \beta$ which generated the data. The point $x_0 = (a_0, b_0)=(0.1, 0.1)$ was chosen as the initial point for each method. The stop criteria for all considered methods are \textbf{number of iterations} and \textbf{closeness of two consequential points}.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{contour1}
+\caption{The graph of f(x)}
+\label{fig: 1}
+\end{center}
+\end{figure}
+
+Since the explicit function expression is provided, one can obtain all necessary derivatives in this task.
+
+$$ \frac{\partial D}{\partial a} = 2 \sum_{k=0}^{100}x_k(ax_k+b-y_k),\ \frac{\partial D}{\partial b} = 2\sum_{k=0}^{100}(ax_k+b-y_k), $$
+$$ \frac{\partial^2 D}{\partial a^2} = 2\sum_{k=0}^{100}x^2_k,\ \frac{\partial^2 D}{\partial a \partial b} = 2\sum_{k=0}^{100}x_k y_k,\ \frac{\partial^2 D}{\partial b^2} = 202. $$
+
+In the Gradient Descent, Conjugate Gradient Descent and Levenberg-Marquardt methods we used Golden Section Search method as line search for their parameters on each step. This is correct since the function is convex. As a result we obtained solutions which are illustrated in the graph~\ref{fig: 2}. All of these solutions are too close for sure to each other as expected and these lines well approximate the line $\alpha x + \beta$.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{solutions1}
+\caption{The graph of f(x)}
+\label{fig: 2}
+\end{center}
+\end{figure}
+
+Now we should analyze the results with respect to precision, function evaluations (here $f$-eval., number of iterations, number of gradient ($\nabla f$-eval.) and hessian evaluations ($\nabla^2 $f-eval.) and number of matrix inversions. These indicators are presented in the table \ref{tab: 1}.
+
+\begin{table}[h]
+$$
+\begin{array}{|c|c|c|c|c|c|c|}
+\hline
+ & \text{Iterations} & \text{\specialcell{ $f$-\\eval.} }& \text{\specialcell{ $\nabla f$-\\eval.} } & \text{\specialcell{ $\nabla^2 f$-\\eval} } & \text{\specialcell{ matrix inv. } } &\text{precision}\\
+\hline
+\text{Gradient Descent} & 7 & 126 & 7 & - & - & \approx 0.154 \\ 
+\hline
+\text{\specialcell{ Conjugate Gradient\\ Descent } } & 4 & 73 & 5 & - & - &\approx 0.154 \\
+\hline
+\text{Newton} & 2 & 0 & 2 & 2& 2 & \approx 0.154 \\
+\hline
+\text{Levenberg-Marquardt} & 2 & 46 & 2 & 2 & 42 & \approx 0.154 \\
+\hline
+\end{array}
+$$
+\caption{Algorithms' indicators in the case of linear approximation.}
+\label{tab: 1}
+\end{table}
+
+As one can see, Gradient Descent method required more function evaluations than other methods and more iterations to converge. It is connected with disappearance of gradient near the minimum point. In the case of Conjugate Gradient Descent there are less iterations were required as a result of correction of ordinary Gradient Descent problems. Two other methods undergo with inversion of matrices. In Levenberg-Marquardt algorithm inversion of matrices are related to line search of optimal parameter $\nu$. Nevertheless, both these methods converged quite fast since they use more information about the optimizing function but the inversion of matrices might be expensive in the problems of higher dimensions. It should be mentioned that these algorithms converged more quickly to the same solution as opposed to the zero-order methods which were considered in the \textbf{Task 2}.
+
+\subsection{The case of $F(x, a, b) = \frac{a}{1+bx}$}
+Here are also 4 aforementioned methods were used to find the optimal curve. In the graph~\ref{fig: 2} the contour plot for the function $D(a,b)$ in this case is provided. The optimum is located on the edge of the area $\{0<a,b<1\}$ and this is the point $(mean(y), 0)$ where $mean(y) \approx 0.769$ is average of ${y}_{k=0}^{101}$ as was derived in the \textbf{task $2$}. It is expected that all these methods' solutions will be close to this point and the corresponding lines will be close to the horizontal line $b = mean(y)$. The point $x_0 = (a_0, b_0)=(0.6, 0.2)$ was chosen as the initial point for each method. The main problem here is that every method is prone to leave the borders of given area and that is why we have to return optimization process to the area. The stop criteria for all considered methods are \textbf{number of iterations} and \textbf{closeness of two consequential points}.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{contour2}
+\caption{The graph of f(x)}
+\label{fig: 3}
+\end{center}
+\end{figure}
+
+As the explicit function expression is provided, one can obtain all necessary derivatives in this task.
+
+$$ \frac{\partial D}{\partial a} = 2 \sum_{k=0}^{100}\frac{1}{1+bx_k}\left(\frac{a}{1+bx_k}-y_k\right),\ \frac{\partial D}{\partial b} = -2\sum_{k=0}^{100} \frac{ax_k}{(1+bx_k)^2}\left(\frac{a}{1+bx_k}-y_k\right), $$
+$$ \frac{\partial^2 D}{\partial a^2} = 2\sum_{k=0}^{100} \frac{1}{(1+bx_k)^2},$$ $$ \frac{\partial^2 D}{\partial a \partial b} = 2\sum_{k=0}^{100} \frac{1}{(1+bx_k)^2} \left( \frac{-2ax_k}{1+bx_k} + x_ky_k \right),$$ $$ \frac{\partial^2 D}{\partial b^2} = 2\sum_{k=0}^{100} \frac{a^2x^2_k}{(1+bx_k)^3} \left( \frac{3}{1+bx_k} - 2y_k \right). $$
+
+In the Gradient Descent, Conjugate Gradient Descent and Levenberg-Marquardt methods we used Golden Section Search method as line search for their parameters on each step. The use of Golden Section is correct because the target function is convex in the considered region as has been seen in the graph. As a result we obtained solutions which are illustrated in the graph~\ref{fig: 4}. All of these solutions are close to each other as expected and these lines span near the aforementioned horizontal line.
+
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{solutions2}
+\caption{The graph of f(x)}
+\label{fig: 4}
+\end{center}
+\end{figure}
+
+Le us analyze the results of applied methods with respect to function evaluations (here $f$-eval., number of iterations, number of gradient ($\nabla f$-eval.) and hessian evaluations ($\nabla^2 $f-eval.) and number of matrix inversions. Measurements of these indicators are provided in the table \ref{tab: 2}.
+
+\begin{table}[h]
+$$
+\begin{array}{|c|c|c|c|c|c|}
+\hline
+ & \text{Iterations} & \text{\specialcell{ $f$-\\eval.} }& \text{\specialcell{ $\nabla f$-\\eval.} } & \text{\specialcell{ $\nabla^2 f$-\\eval} } & \text{\specialcell{ matrix inv. } }\\
+\hline
+\text{Gradient Descent} & 36 & 650 & 36 & - & - \\ 
+\hline
+\text{\specialcell{ Conjugate Gradient\\ Descent } } & 37 & 669 & 38 & - & - \\
+\hline
+\text{Newton} & 3 & 0 & 3 & 3& 3 \\
+\hline
+\text{Levenberg-Marquardt} & 2 & 46 & 2 & 2 & 42  \\
+\hline
+\end{array}
+$$
+\caption{Algorithms' indicators in the case of rational approximation.}
+\label{tab: 2}
+\end{table}
+
+As one can see, two gradient methods required too much iterations and function evaluations to converge. Nonetheless, their corresponding lines practically coincide with the horizontal line. Two other methods stuck in other point and did not reach this line but converged with less number of iterations. It is worth mentioning that Levenberg-Marquardt method did lots of matrices inversions in order to find optimal parameter $\nu$.  Besides, these algorithms here also converged more quickly to their solutions as opposed to the zero-order methods which were considered in the \textbf{Task 2} but here second-order methods did not converge to optimum due to being stuck at the border.
 
 \section{Data structures and design techniques used in algorithms}
 
 
-In the implementation of the algorithms and for random variables generation the Python's package Numpy is used since it allows to vectorize calculations what accelerates the evaluations.
+In the implementation of the algorithms and for random variables generation the Python's package Numpy is used since it allows to vectorize calculations what accelerates the evaluations. 
 
 
 \section{Conclusion}
-As the result of this work, we considered direct methods of optimization in the cases of one and two variables. The methods were compared by the number of iterations required to obtain the solution with given precision, the number of function evaluations and precision. All of the considered methods except Nelder-Mead method were implemented in Python programming language.
+As the result of this work, we considered first- and second-order methods of optimization in application two the task of data approximation. The methods were compared with each other and with methods from the \textbf{Task 2} by the number of iterations required to obtain the solution with given precision, the number of function and its derivatives evaluations and precision. The results are satisfactory. All of these methods were implemented in Python programming language.
 Discussion for data structures and design techniques which were used in the implementations is provided. The work goals were achieved.
 
 \section{Appendix}
 Algorithms implementation code is provided in \cite{repogithub}.
 
 \nocite{Deisenroth2020}
-\nocite{Uzila21}
+%\nocite{Uzila21}
 
 {\small \bibliography{biblio}}
 \bibliographystyle{gost2008}

@@ -117,7 +117,7 @@ def levenmarq(func, limits, x0, regulpar: Sequence[int, float, tuple[float, floa
         return curr, func(curr), calcsstats, np.linalg.norm(curr - optpoint)
 
 
-def gradient_descent_method(func, funcgrad, x0, limits, alpha=1, eps=1e-3, max_iter=1000, rtaparam=0.01):
+def gradient_descent_method(func, funcgrad, x0, limits, eps=1e-3, max_iter=1000, rtaparam=0.01, optpoint=None):
     """Gradient descent method for unconstraint optimization problem.
     given a starting point x ∈ Rⁿ,
     repeat
@@ -155,6 +155,7 @@ def gradient_descent_method(func, funcgrad, x0, limits, alpha=1, eps=1e-3, max_i
         alpha, fcurrval, _, lsfcalcs = goldenratio_method(lambda u: func(curr + u * dir))
         delta = alpha * dir
         curr = curr + delta
+        print(curr)
         if not belongs(curr, limits):
             while not belongs(curr, limits):
                 curr -= rtaparam * delta
@@ -168,11 +169,13 @@ def gradient_descent_method(func, funcgrad, x0, limits, alpha=1, eps=1e-3, max_i
     calcsstats = {"iterations": niters,
                   "funccalcs": fcalcs,
                   "gradcalcs": gradcalcs}
+    if optpoint is None:
+        return curr, fcurrval, calcsstats, None
+    else:
+        return curr, fcurrval, calcsstats, np.linalg.norm(curr - optpoint)
 
-    return curr, fcurrval, calcsstats, None
 
-
-def conjugate_gradient_method(func, funcgrad, x0, limits, rtaparam = 0.01, eps=1e-3, max_iter=1000):
+def conjugate_gradient_method(func, funcgrad, x0, limits, rtaparam = 0.01, eps=1e-3, max_iter=1000, optpoint=None):
     """Non-Linear Conjugate Gradient Method for optimization problem.
     Parameters
     --------------------
@@ -228,5 +231,8 @@ def conjugate_gradient_method(func, funcgrad, x0, limits, rtaparam = 0.01, eps=1
                   "funccalcs": fcalcs,
                   "gradcalcs": gradcalcs}
 
-    return curr, fcurrval, calcsstats, None
+    if optpoint is None:
+        return curr, fcurrval, calcsstats, None
+    else:
+        return curr, fcurrval, calcsstats, np.linalg.norm(curr - optpoint)
 
