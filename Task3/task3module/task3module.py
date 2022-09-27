@@ -31,10 +31,10 @@ the optimization process left the given area.
 """
 
 
-def newtons(func, limits, x0, funcgrad, funchess, eps=1e-3, rtaparam=0.01, optpoint=None):
+def newtons(func, limits, x0, funcgrad, funchess, eps=1e-3, rtaparam=0.01, optpoint=None, maxiter = 1000):
     curr, prev, delta = x0, None, None
     niters, fcalcs, gradcalcs, hesscalcs, matrixinvers = 0, 0, 0, 0, 0
-    while (prev is None or np.linalg.norm(curr - prev) > eps):
+    while prev is None or np.linalg.norm(curr - prev) > eps and niters < maxiter:
         g, H = funcgrad(curr), funchess(curr)
         delta = -np.dot(np.linalg.inv(H), g)
         prev = curr
@@ -75,14 +75,14 @@ the optimization process left the given area.
 
 
 def levenmarq(func, limits, x0, regulpar: Sequence[int, float, tuple[float, float]],
-              funcgrad, funchess, eps=1e-3, rtaparam=0.01, optpoint=None):
+              funcgrad, funchess, eps=1e-3, rtaparam=0.01, optpoint=None, maxiter = 1000):
     curr, prev = x0, None
     delta = None
     niters, fcalcs, gradcalcs, hesscalcs, matrixinvers = 0, 0, 0, 0, 0
     n = x0.shape[0]
     identitymatrix = np.eye(N=n, dtype=float)
 
-    while prev is None or (np.linalg.norm(curr - prev) > eps):  # and belongs(curr, limits)):
+    while prev is None or (np.linalg.norm(curr - prev) > eps and niters < maxiter):  # and belongs(curr, limits)):
         g, H = funcgrad(curr), funchess(curr)
         gradcalcs += 1
         hesscalcs += 1
@@ -101,7 +101,7 @@ def levenmarq(func, limits, x0, regulpar: Sequence[int, float, tuple[float, floa
         while not belongs(curr, limits):
             curr -= rtaparam * delta
         niters += 1
-
+        print(niters)
     # while not belongs(curr, limits):
     #    curr -= rtaparam * delta
 
@@ -117,7 +117,7 @@ def levenmarq(func, limits, x0, regulpar: Sequence[int, float, tuple[float, floa
         return curr, func(curr), calcsstats, np.linalg.norm(curr - optpoint)
 
 
-def gradient_descent_method(func, funcgrad, x0, limits, eps=1e-3, max_iter=1000, rtaparam=0.01, optpoint=None):
+def gradient_descent_method(func, funcgrad, x0, limits, eps=1e-3, maxiter=1000, rtaparam=0.01, optpoint=None):
     """Gradient descent method for unconstraint optimization problem.
     given a starting point x ∈ Rⁿ,
     repeat
@@ -138,7 +138,7 @@ def gradient_descent_method(func, funcgrad, x0, limits, eps=1e-3, max_iter=1000,
         the initial value of steplength.
     eps : float, optional
         tolerance for the norm of f_grad.
-    max_iter : integer, optional
+    maxiter : integer, optional
         maximum number of steps.
     """
     # initialize x, f(x), and f'(x)
@@ -147,7 +147,7 @@ def gradient_descent_method(func, funcgrad, x0, limits, eps=1e-3, max_iter=1000,
     # initialize number of steps, save x and f(x)
     niters, fcalcs, gradcalcs = 0, 0, 0
     # take steps
-    while prev is None or (np.linalg.norm(curr - prev) > eps and niters < max_iter):
+    while prev is None or (np.linalg.norm(curr - prev) > eps and niters < maxiter):
         # determine direction
         dir = -gcurr
         prev = curr
@@ -175,7 +175,7 @@ def gradient_descent_method(func, funcgrad, x0, limits, eps=1e-3, max_iter=1000,
         return curr, fcurrval, calcsstats, np.linalg.norm(curr - optpoint)
 
 
-def conjugate_gradient_method(func, funcgrad, x0, limits, rtaparam = 0.01, eps=1e-3, max_iter=1000, optpoint=None):
+def conjugate_gradient_method(func, funcgrad, x0, limits, rtaparam = 0.01, eps=1e-3, maxiter=1000, optpoint=None):
     """Non-Linear Conjugate Gradient Method for optimization problem.
     Parameters
     --------------------
@@ -184,7 +184,7 @@ def conjugate_gradient_method(func, funcgrad, x0, limits, rtaparam = 0.01, eps=1
         x0     : initial value of x, can be set to be any numpy vector,
         method   : method to calculate beta, can be one of the followings: FR, PR, HS, DY, HZ.
         eps      : tolerance of the difference of the gradient norm to zero
-        max_iter : maximum number of iterations
+        maxiter : maximum number of iterations
     """
 
     # initialize some values
@@ -197,7 +197,7 @@ def conjugate_gradient_method(func, funcgrad, x0, limits, rtaparam = 0.01, eps=1
     niters = 0
 
     # begin iteration
-    while prev is None or (np.linalg.norm(curr - prev) > eps and niters < max_iter):
+    while prev is None or (np.linalg.norm(curr - prev) > eps and niters < maxiter):
         # search for step size alpha
 
         alpha, y_new, _, lsfcalcs = goldenratio_method(lambda u: func(curr + u * p))

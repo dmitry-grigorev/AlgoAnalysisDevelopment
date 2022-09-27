@@ -208,7 +208,7 @@ where $g_k = \nabla f(x_k)$, $\mathbf{H}_k = H(x_k) = \frac{d^2 f}{dx^2}(x_k)$. 
 Newton’s method may fail to converge when $\mathbf{H}_k$ is not positive definite.
 
 \subsection{Levenberg-Marquardt method}
-Levenberg-Marquadt method is called to solve the problem of Newton's method in non-guaranteed positive definiteness of $\mathbf{H}_k$. Here $\delta_k$ is computed from the system:
+Levenberg-Marquadt method\footnote{for sure, there is another Levenberg-Marquardt algorithm which uses Jacobian in its calculations.} is called to solve the problem of Newton's method in non-guaranteed positive definiteness of $\mathbf{H}_k$. Here $\delta_k$ is computed from the system:
 \[ (\mathbf{H}_k + \nu \mathbf{I})\delta_k = -g_k, \]
 where $\nu \ge 0$ is chosen so that the matrix $\mathbf{H}_k + \nu \mathbf{I}$ is positive definite. This method is a combination of Newton's and Gradient Descent methods so it is possible to adjust the behavior of the algorithm depending on the properties of function in current point. It is possible to choose the optimal parameter $\nu$ by any method among line search methods:
 \[ \nu^* = \arg \min_{\nu \ge 0} f(\delta_k(\nu)),\  \delta_k(\nu) = -  (\mathbf{H}_k + \nu \mathbf{I})^{-1}g_k.\]
@@ -236,7 +236,7 @@ In the Gradient Descent, Conjugate Gradient Descent and Levenberg-Marquardt meth
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{solutions1}
-\caption{The graph of f(x)}
+\caption{The data, the line which generated these data and fitted lines of linear functions. Since the lines are too close, the additional plot with zoomed sector is provided on the right size of the figure.}
 \label{fig: 2}
 \end{center}
 \end{figure}
@@ -287,7 +287,7 @@ In the Gradient Descent, Conjugate Gradient Descent and Levenberg-Marquardt meth
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{solutions2}
-\caption{The graph of f(x)}
+\caption{The data, the line which generated these data and fitted lines of rational functions. Since the lines are too close, the additional plot with zoomed sector is provided on the right size of the figure.}
 \label{fig: 4}
 \end{center}
 \end{figure}
