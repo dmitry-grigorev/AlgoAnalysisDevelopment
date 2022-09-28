@@ -101,9 +101,6 @@ def levenmarq(func, limits, x0, regulpar: Sequence[int, float, tuple[float, floa
         while not belongs(curr, limits):
             curr -= rtaparam * delta
         niters += 1
-        print(niters)
-    # while not belongs(curr, limits):
-    #    curr -= rtaparam * delta
 
     calcsstats = {"iterations": niters,
                   "funccalcs": fcalcs,

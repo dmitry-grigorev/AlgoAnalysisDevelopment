@@ -105,22 +105,22 @@ we need to find the optimal function for given data $(x_k, y_k)_{k = 0}^{100}$ a
 \[ D(a, b) = \sum_{k=0}^{100} (F(x_k, a, b) - y_k)^2 \]
 using
 \begin{outline}
-\1 gradient descent,
-\1 conjugate gradient descent,
+\1 Gradient Descent,
+\1 Conjugate Gradient Descent,
 \1 Newton's method,
 \1 Levenberg-Marquardt method.
 \end{outline}
 
-All functions which will be obtained have to be visualized with the given data and the line which generates these data. Furthermore, we have to compare the algorithms in terms of precision, number of iterations and number of function evaluations using the results.
+All functions which will be obtained have to be visualized with the given data and the line which generates these data. Furthermore, we have to compare the algorithms used in this task and in the \textbf{Task 2} in terms of precision, number of iterations and number of function evaluations using the results.
 
 \section{Brief theoretical part}
 
 Suppose that we are given with a function $f:\ G \subset \Real^n \to \Real$ where $G$ is connected open set in $\Real^n$. We need to minimize this function on $G$.
 
-\subsection{Gradient descent method}
+\subsection{Gradient Descent method}
 Let the function $f$ to be once continuously differentiable on $G$ ($f \in C^1(G)$). The gradient descent method utilizes the fundamental fact that the gradient of function $\nabla f$ in a point is directed towards the fastest growth of the function among all other directions (\textbf{steepest ascent}) and, vice versa, $-\nabla f$ --- the direction of the \textbf{steepest descent}. At each step of the algorithm next point is resulted by moving from the previous point in the direction of the antigradient at this point. 
 
-The gradient descent has such parameters as initial point $x_0$ and $\alpha$ which is called. \textbf{learning rate}. Researcher can both set fixed value to $\alpha$, decrease it as the progress of optimization lasts or find optimal value at each step by means of line search methods (for instance, by means of Exhaustive Search or Golden Section Search).
+Gradient Descent has such parameters as initial point $x_0$ and $\alpha$ which is called \textbf{learning rate}. Researcher can both set fixed value to $\alpha$, decrease it as the progress of optimization lasts or find optimal value at each step by means of line search methods (for instance, by means of Exhaustive Search or Golden Section Search).
 
 Despite this method is simple, it has such problems as $1)$ being prone to criss-cross pattern of moves between two consequential points in the valleys of function what slows the rate of convergence and 2) slow convergence near the points where $\nabla f(x) \approx 0$.
 
@@ -140,8 +140,8 @@ Despite this method is simple, it has such problems as $1)$ being prone to criss
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Conjugate gradient descent}
-Originally, the conjugate optimization method was introduced for solving the linear system of equations problem with symmetric positive-definite matrix. The main idea of this method is that the twice differentiable function with non-degenerate second derivative at given point behaves like a quadratic paraboloid. 
+\subsection{Conjugate Gradient Descent}
+Originally, this optimization method was introduced for solving the linear system of equations problem with symmetric positive-definite matrix. The main idea of this method is that the twice differentiable function with non-degenerate second derivative at given point behaves like a quadratic paraboloid. 
 
 Let $f \in C^2(G)$, $H = \frac{d^2 f}{dx^2}$ and we are given with an initial point $x_0 \in G$ and precision $\eps > 0$. At each step in point $x_k$ the algorithm uses not only the direction of the steepest descent $-\nabla f(x_k)$ but the additional direction $s_k$ which is conjugated to $s_{k-1}$ in the sense of orthogonality with respect to $\mathbf{H}_{k-1} = H(x_{k-1})$:
 \[ s_k ^{T} \mathbf{H}_{k-1} s_{k-1} = 0. \]
@@ -177,14 +177,14 @@ There are several ways to calculate $\beta_n$. The classical one is \textbf{Flet
 \[ \beta_k = \frac{g^T_k g_k}{g^T_{k-1} g_{k-1}} \]
 The another one is \textbf{Polak–Ribière}:
 \[ \beta_k = \frac{g^T_k (g_k - g_{k-1})}{g^T_{k-1} g_{k-1}} \]
-The advantage in using Polak–Ribiere formula is that it automatically reset its moves (i.e. $s_k \approx g_k$) when little progress is made over the last iteration. This property can speed up the convergence near the solution point \cite{cavazzuti13}.
+The advantage in using Polak–Ribiere formula is that it automatically resets its moves (i.e. $s_k \approx g_k$) when little progress is made over the last iteration. This property can speed up the convergence near the solution point \cite{cavazzuti13}.
 
-The conjugate gradient methods have such an advantage as no matrix operations are required in their algorithms but they are not robust. These methods fix the problem of gradient descent with behavior in function valleys.
+The conjugate gradient methods have such an advantage as no matrix operations are required in their algorithms but they are not robust. These methods fix the problem of gradient descent with behavior in function's valleys.
 
 \subsection{Newton's method}
 Newton's method is the representative of \textbf{Trust region approach algorithms}. The trust region approach assumes that the objective function $f$ is well approximated by a quadratic function $q_k (\delta)$ obtained by truncating the Taylor series for $f(x_k + \delta)$. In the case of Newton's approach $q_k$ is as follows:
 \[ f(x_k + \delta) \approx q_k(\delta) = f(x_k) + g_k^T \delta + \frac{1}{2} \delta^T \mathbf{H}_k \delta, \]
-where $g_k = \nabla f(x_k)$, $\mathbf{H}_k = H(x_k) = \frac{d^2 f}{dx^2}(x_k)$. The next point $x_{k+1}$ is resulted from the minimization of $q_k(\delta)$ which is equivalent to solving the system $\mathbf{H}_k \delta = -g_k$. The main assumption here is that $\mathbf{H}_k$ have to be positive definite for all $k$, otherwise the method can converge to point which is not a point of local minimum. 
+where $g_k = \nabla f(x_k)$, $\mathbf{H}_k = H(x_k) = \frac{d^2 f}{dx^2}(x_k)$. The next point $x_{k+1}$ is resulted from the minimization of $q_k(\delta)$ which is equivalent to solving the system $\mathbf{H}_k \delta = -g_k$. The main assumption here is that $\mathbf{H}_k$ has to be positive definite for all $k$, otherwise the method can converge to point which is not a point of local minimum. 
 
 \begin{algorithm}[h]
 \caption{Newton's method algorithm}
@@ -205,10 +205,8 @@ where $g_k = \nabla f(x_k)$, $\mathbf{H}_k = H(x_k) = \frac{d^2 f}{dx^2}(x_k)$. 
 \end{algorithmic}
 \end{algorithm}
 
-Newton’s method may fail to converge when $\mathbf{H}_k$ is not positive definite.
-
 \subsection{Levenberg-Marquardt method}
-Levenberg-Marquadt method\footnote{for sure, there is another Levenberg-Marquardt algorithm which uses Jacobian in its calculations.} is called to solve the problem of Newton's method in non-guaranteed positive definiteness of $\mathbf{H}_k$. Here $\delta_k$ is computed from the system:
+Levenberg-Marquadt method\footnote{for sure, there is another Levenberg-Marquardt algorithm which directly solves the problem of least squares and uses Jacobian in its calculations.} is called to solve the problem of Newton's method in non-guaranteed positive definiteness of $\mathbf{H}_k$. Here $\delta_k$ is computed from the system:
 \[ (\mathbf{H}_k + \nu \mathbf{I})\delta_k = -g_k, \]
 where $\nu \ge 0$ is chosen so that the matrix $\mathbf{H}_k + \nu \mathbf{I}$ is positive definite. This method is a combination of Newton's and Gradient Descent methods so it is possible to adjust the behavior of the algorithm depending on the properties of function in current point. It is possible to choose the optimal parameter $\nu$ by any method among line search methods:
 \[ \nu^* = \arg \min_{\nu \ge 0} f(\delta_k(\nu)),\  \delta_k(\nu) = -  (\mathbf{H}_k + \nu \mathbf{I})^{-1}g_k.\]
@@ -266,7 +264,7 @@ $$
 As one can see, Gradient Descent method required more function evaluations than other methods and more iterations to converge. It is connected with disappearance of gradient near the minimum point. In the case of Conjugate Gradient Descent there are less iterations were required as a result of correction of ordinary Gradient Descent problems. Two other methods undergo with inversion of matrices. In Levenberg-Marquardt algorithm inversion of matrices are related to line search of optimal parameter $\nu$. Nevertheless, both these methods converged quite fast since they use more information about the optimizing function but the inversion of matrices might be expensive in the problems of higher dimensions. It should be mentioned that these algorithms converged more quickly to the same solution as opposed to the zero-order methods which were considered in the \textbf{Task 2}.
 
 \subsection{The case of $F(x, a, b) = \frac{a}{1+bx}$}
-Here are also 4 aforementioned methods were used to find the optimal curve. In the graph~\ref{fig: 2} the contour plot for the function $D(a,b)$ in this case is provided. The optimum is located on the edge of the area $\{0<a,b<1\}$ and this is the point $(mean(y), 0)$ where $mean(y) \approx 0.769$ is average of ${y}_{k=0}^{101}$ as was derived in the \textbf{task $2$}. It is expected that all these methods' solutions will be close to this point and the corresponding lines will be close to the horizontal line $b = mean(y)$. The point $x_0 = (a_0, b_0)=(0.6, 0.2)$ was chosen as the initial point for each method. The main problem here is that every method is prone to leave the borders of given area and that is why we have to return optimization process to the area. The stop criteria for all considered methods are \textbf{number of iterations} and \textbf{closeness of two consequential points}.
+Here are also 4 aforementioned methods were used to find the optimal curve. In the graph~\ref{fig: 2} the contour plot for the function $D(a,b)$ in this case is provided. The optimum is located on the edge of the area $\{0<a,b<1\}$ and this is the point $(mean(y), 0)$ where $mean(y) \approx 0.769$ is average of $\{y_k\}_{k=0}^{101}$ as was derived in the \textbf{Task 2}. It is expected that all these methods' solutions will be close to this point and the corresponding lines will be close to the horizontal line $b = mean(y)$. The point $x_0 = (a_0, b_0)=(0.6, 0.2)$ was chosen as the initial point for each method. The main problem here is that every method is prone to leave the borders of given area and that is why we have to return optimization process to the area. The stop criteria for all considered methods are \textbf{number of iterations} and \textbf{closeness of two consequential points}.
 
 \begin{figure}[h]
 \begin{center}
@@ -281,7 +279,7 @@ As the explicit function expression is provided, one can obtain all necessary de
 $$ \frac{\partial D}{\partial a} = 2 \sum_{k=0}^{100}\frac{1}{1+bx_k}\left(\frac{a}{1+bx_k}-y_k\right),\ \frac{\partial D}{\partial b} = -2\sum_{k=0}^{100} \frac{ax_k}{(1+bx_k)^2}\left(\frac{a}{1+bx_k}-y_k\right), $$
 $$ \frac{\partial^2 D}{\partial a^2} = 2\sum_{k=0}^{100} \frac{1}{(1+bx_k)^2},$$ $$ \frac{\partial^2 D}{\partial a \partial b} = 2\sum_{k=0}^{100} \frac{1}{(1+bx_k)^2} \left( \frac{-2ax_k}{1+bx_k} + x_ky_k \right),$$ $$ \frac{\partial^2 D}{\partial b^2} = 2\sum_{k=0}^{100} \frac{a^2x^2_k}{(1+bx_k)^3} \left( \frac{3}{1+bx_k} - 2y_k \right). $$
 
-In the Gradient Descent, Conjugate Gradient Descent and Levenberg-Marquardt methods we used Golden Section Search method as line search for their parameters on each step. The use of Golden Section is correct because the target function is convex in the considered region as has been seen in the graph. As a result we obtained solutions which are illustrated in the graph~\ref{fig: 4}. All of these solutions are close to each other as expected and these lines span near the aforementioned horizontal line.
+In the Gradient Descent, Conjugate Gradient Descent and Levenberg-Marquardt methods we used Golden Section Search method as line search for their parameters on each step. The use of Golden Section is correct because the target function is convex in the considered region as has been seen in the graph. Due to the convexity in the Levenberg-Marquardt algorithm the search for optimal parameter is alleviated (we does not have to check positive definiteness of adjusted hessian). As a result of application of these methods we obtained solutions which are illustrated in the graph~\ref{fig: 4}. All of these solutions are close to each other as expected and these lines span near the aforementioned horizontal line.
 
 
 \begin{figure}[h]
