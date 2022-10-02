@@ -1,16 +1,35 @@
 
 # start - vertex from which dfs will be initiated
-# matrix - adjacency matrix of graph
-# visited - boolean array of visited vertices
-# path - list of vertices that were visited
-def dfs_adj(start, matrix, visited, path=None):
-    if path is None:
-        path = list()
-    visited[start] = True
-    path.append(start)
-    for i in range(len(matrix[start])):
-        if matrix[start][i] == 1 and not visited[i]:
-            dfs_adj(i, matrix, visited, path)
+# adj_list - adjacency list of graph
+def dfs_adj(start, adj_list):
+    # list of visited vertices
+    visited = [False] * len(adj_list)
+
+    path = list()
+    # Create a stack for DFS
+    stack = list()
+
+    # Push the current source node.
+    stack.append(start)
+
+    while len(stack):
+        # Pop a vertex from stack
+        start = stack[-1]
+        stack.pop()
+
+        # Stack may contain same vertex twice. So
+        # we need to print the popped item only
+        # if it is not visited.
+        if not visited[start]:
+            path.append(start)
+            visited[start] = True
+
+        # Get all adjacent vertices of the popped vertex s
+        # If an adjacent has not been visited, then push it
+        # to the stack.
+        for node in adj_list[start]:
+            if not visited[node]:
+                stack.append(node)
     return path
 
 
