@@ -1,3 +1,20 @@
+import numpy as np
+
+
+def generate_from_nm(n, m):
+    initial = np.random.permutation([1] * m + [0] * (n * (n - 1) // 2 - m))
+    Madj = np.zeros(shape=(n, n), dtype="int")
+    l = n - 1
+    start = 0
+    end = l
+    for i in range(1, n):
+        Madj[i - 1, i:] = initial[start:end]
+        l = n - i
+        start = end
+        end += l - 1
+    Madj += Madj.T
+    return Madj
+
 
 # start - vertex from which dfs will be initiated
 # adj_list - adjacency list of graph
@@ -31,6 +48,20 @@ def dfs_adj(start, adj_list):
             if not visited[node]:
                 stack.append(node)
     return path
+
+
+def find_components(adj_list):
+    n = len(adj_list)
+    components = [-1] * n
+    i, compnum = 0, 0
+    while i < n:
+        if components[i] == -1:
+            comp_verts = dfs_adj(i, adj_list)
+            for j in range(len(comp_verts)):
+                components[comp_verts[j]] = compnum
+            compnum += 1
+        i += 1
+    return components
 
 
 # start - vertex from which dfs will be initiated
