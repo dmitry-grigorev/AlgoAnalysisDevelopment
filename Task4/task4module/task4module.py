@@ -48,10 +48,10 @@ def difevol(func, dim, m, initpopulation=None, eps=1e-3, K=0.8, F=0.8, C=0.9, ma
     finalvals = func_vec(currpopulation)
     ioptimal = np.where(finalvals == np.min(finalvals))[0]
     if optpoint is None:
-        return currpopulation[:, ioptimal], finalvals[ioptimal], calcsstats, None
+        return currpopulation[:, ioptimal][:, 0], finalvals[ioptimal], calcsstats, None
     else:
-        return currpopulation[:, ioptimal], finalvals[ioptimal], calcsstats, \
-               np.linalg.norm(currpopulation[:, ioptimal] - optpoint)
+        return currpopulation[:, ioptimal][:, 0], finalvals[ioptimal], calcsstats, \
+               np.linalg.norm(currpopulation[:, ioptimal][:, 0] - optpoint)
 
 
 def safortsp(paths: np.ndarray, initpath, Tinit=1, alpha=0.9):

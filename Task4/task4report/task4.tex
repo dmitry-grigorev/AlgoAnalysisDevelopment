@@ -46,6 +46,9 @@
 \newcommand{\Samplex}{\varX_1,\varX_2,\dots,\varX_n}
 \DeclareMathOperator{\sign}{sign}
 
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
 \theoremstyle{definition}
 \newtheorem{theorem}{Theorem}
 \newtheorem{definition}{Definition}
@@ -127,15 +130,23 @@ Suppose that we are given with a function $f:\ G \subset \Real^n \to \Real$ wher
 The name of this algorithm comes from annealing in metallurgy: a technique involving heating and controlled cooling of a material to increase the size of its crystals and reduce their defects.
 
 The optimization here starts from evaluating the value of the objective function $f(x_0)$
-at an initial random point $x_0 \in G$. At each step the next point $x_k$ is obtained from the current temperature $T_k$ which describes the mobility of moves from $x_{k-1}$ to $x_k$. There are lots of rules to get to $x_k$ from the previous point. One of them is as follows:
+at an initial random point $x_0 \in G$. At each step the next point  $x_k$ is obtained from the current temperature $T_k$ which describes the mobility of moves from $x_{k-1}$ to $x_k$. There are lots of rules to get to $x_k$ (\textbf{neighbor}) from the previous point. One of them is as follows:
 \[ x^{(i)}_{k} = x^{(i)}_{k-1} + \left((x^{(i)}_{\max} - x^{(i)}_{k-1})r^{(i)}_{k-1} + (x^{(i)}_{\min} - x^{(i)}_{k-1})s^{(i)}_{k-1}\right) \frac{T_{k-1}}{T_0},\ i = 1, \dots, n ,\]
 where $r^{(i)}_{k-1},\ s^{(i)}_{k-1} \sim U(0, 1)$ are i.i.d (with respect to both upper and lower indices) uniformly distributed random variables and $x^{(i)}_{\min}$ and $x^{(i)}_{\max}$ define the search range for the solution. There are also lots of ways to define the rule to which the sequence $\{T_k\}$ obeys. Here we consider the following one with the \textbf{annealing coefficient} $p \ge 1$:
 \[ T_k = T_0 \left(1 - \frac{k - 1}{k_{\max} - 1}\right)^p, \]
 where $k_{\max}$ is the maximum number of iterations. We accept the new point $x_k$ if $f(x_k) \le f(x_{k-1})$ (however, there are also a number of ways to accept the new point but we limited ourselves on this one).
+\subsubsection{Simulated Annealing in Travelling Salesman Problem (TSP)}
+Let $\{d_{ij} \}_{i, j = 1}^{n}$ be the set of distances between $n$ points (for example, cities). Every cyclic path (so-called \textbf{tour}) between these points can be expressed in the terms of permutations $\pi = (\pi_1, \pi_2, \dots, \pi_n) \in \mathbb{G}_n$ where city $\pi_i$ is connected with $\pi_{i+1}$ $\forall i = 1,\dots, (n-1)$ and the city $\pi_n$ is connected with $\pi_1$. The task of TSP is to minimize the function w.r.t. $\pi$:
+\[ f(\pi) = \sum_{i=1}^{n-1}d_{\pi_i \pi_{i+1}} + d_{\pi_n\pi_1}. \]
+The algorithm of Simulated Annealing is presented in \cite{Yang11}. To put it briefly, the idea of choice of random neighbor from the current tour is as follows: with probability $0.5$ in the current tour $\pi$ we revert random sub-tour $(\pi_{i_1},\dots,\pi_{i_k})$, otherwise this sub-tour is inserted between cities $\pi_j$ and $\pi_{j+1}$ where the edge $\pi_j \pi_{j+1}$ is randomly chosen from the rest of edges:
+\begin{align*}
+(\pi_1,\dots, \pi_{i_1-1}, &\underline{\pi_{i_1},  \dots, \pi_{i_k}}, \pi_{i_{k}+1}, \dots, \pi_j, \pi_{j+1},\dots, \pi_n) \to \\ \to &  (\pi_1,\dots, \pi_{i_1-1}, \pi_{i_{k}+1}, \dots, \pi_j, \underline{\pi_{i_1}, \dots, \pi_{i_k}}, \pi_{j+1},\dots, \pi_n).
+\end{align*}
 
 \subsection{Differential Evolution}
 Let we have an initial population $x^{(0)}_1, \dots, x^{(0)}_m \in G$ of constant volume $m$. At each iteration for each $j = 1, \dots, m$ \textbf{mutant individual} $v^{(k)}_i$ is obtained from the elements of previous population $x^{(k-1)}_1, \dots, x^{(k-1)}_m$. There are a large variety of ways to produce $v^{(k)}_i$:
 \begin{align}
+\label{difev}
 v^{(k)}_i & = x^{(k-1)}_i + K (x^{(k-1)}_a - x^{(k-1)}_i) + F(x^{(k-1)}_b - x^{(k-1)}_c);\\
 v^{(k)}_i & = x^{(k-1)}_i + F(x^{(k-1)}_b - x^{(k-1)}_c);\\
 v^{(k)}_i & = x^{(k-1)}_a + F(x^{(k-1)}_b - x^{(k-1)}_c);\\
@@ -162,7 +173,7 @@ x^{(k-1)}_{i} &\ \text{otherwise}.
 Common choice of parameters is as follows: $C = 0.9,\ F = K = 0.8$. Moreover, the larger is $m$ and the smaller are $F$ and $K$ then the more robust is the algorithm and the more expensive is the optimization process.
 
 \subsection{Particle Swarm}
-This method replicates the behavior of birds looking for food and following the leader. The idea is that each individual in in the swarm knows both its own best position and best position of the whole swarm.
+This method replicates the behavior of birds looking for food and following the leader. The idea is that each individual in the swarm knows both its own best position and best position of the whole swarm.
 
 Let we are given with an initial population $x^{(0)}_1, \dots, x^{(0)}_m$ of size $m$. At each iteration the position of the $i$-th individual is calculated with respect to the formula: 
 \[ x^{(k)}_i = x^{(k-1)}_i + v^{(k)}_i, \]
@@ -171,16 +182,99 @@ where $v^{(k)}_i$ is the velocity of $i$-th individual which is the function of 
 where $r_1,r_2 \sim U(0, 1)$ are the random variables, $C_1$ is the \textbf{cognitive factor}, $C_2$ is the \textbf{social factor} and $W$ is the \textbf{inertia factor}.
 
 \section{Results}
+\subsection{Problem I}
+First of all, we generated data $(x_k, y_k)_{k=1}^{1000}$ as described in the section \ref{sec: probsetup}. We need to find the function $F(a, b, c ,d, x) = \frac{ax+b}{x^2+cx+d}$ which fits the data in terms of least squares. To tackle this problem, we applied the following algorithms with corresponding parameters:
+\begin{outline}
+\1 Nelder-Mead method,
+\1 Levenberg-Marquardt method (which uses hessian, not jacobian, as described in the \textbf{Task 3}) with Golden Section search of parameter $\nu$ in the range $[117, 120]$,
+\1 Differential Evolution in the $7$-th form as described in the list \ref{difev} with $10$ individuals, $F = K = 0.8,\ C = 0.9$,
+\1 Particle Swarm Optimization with $W = C_1 = C_2 = 0.5$ and $100$ particles.
+\end{outline}
+In the first two methods we used such stop criteria as maximum number of iterations (here $1000$) and distance between two consequential points. In the Particle Swarm one we used both the maximum number of iterations and the small change of swarm's best position criteria. As for the differential evolution, the maximum number of iterations criterion is used and the maximum number of iterations throughout which the best configuration of individuals changes a little is used. Furthermore, we search for solutions in the hypercube $[-10, 10]^4$. The initial point for deterministic algorithms is the point $(-1.5, -2.5, 3.5, 4.5)^{\mathbf{T}}$.
+
+As a result of application of these methods, we obtained 4 curves which are illustrated in the graph \ref{fig: 1} with the generated data.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{solutions}
+\caption{The data and the resulted curves. Additionally zoomed sector of this graph is provided on the right side}
+\label{fig: 1}
+\end{center}
+\end{figure}
+ 
+As one can see, the resulted from Nelder-Mead and Differential Evolution curves practically coincide with each other. Along with them, the Particle Swarm's curve also well describes the vertical asymptote in $x = 1$ but ignore another one in $x = 2$. At the same time, Levenberg-Marquardt algorithm provided another solution which describes the data badly at all.
+Let us analyze the calculation results of these methods which are presented in the table 
+\ref{tab: 1}.
+
+
+\begin{table}[h]
+$$
+\begin{array}{|c|c|c|c|c|c|c|}
+\hline
+ & \text{Iterations} & \text{\specialcell{ $f$-\\eval.} }& \text{\specialcell{ $\nabla f$-\\eval.} } & \text{\specialcell{ $\nabla^2 f$-\\eval} } & \text{\specialcell{ matrix inv. } } &\text{precision}\\
+\hline
+\text{Nelder-Mead} & 409 & 695 & - & - & - & \approx 1.737 \\ 
+\hline
+\text{\specialcell{ Levenberg-Marquardt } } & 22 & 440 & 22 & 22 & 396 &\approx 11.929 \\
+\hline
+\text{\specialcell{Differential\\ Evolution}} & 591 & 5920 & - & - & - & \approx 1.737 \\
+\hline
+\text{Particle Swarm} & 57 & 5800 & - & - & - & \approx 5.56237 \\
+\hline
+\end{array}
+$$
+\caption{Algorithms' indicators}
+\label{tab: 1}
+\end{table}
+
+Here we can see that two metaheuristic algorithms required too many function evaluations since at each iteration they have to calculate its values for each individual/particle. The better one is Nelder-Mead algorithm since it required practically 10 times less function evaluations what resulted in the obtaining of the same solution as Differential Evolution provided. As for Levenberg-Marquardt algorithm, it required $396$ $4 \times 4$-matrices inversions what is expensive for sure. At last, this method converged to another local minimum since the target function is not convex in fact. Due to the ability to avoid being stuck in the neighborhood of local minima metaheuristic algorithms demonstrated themselves here better.
+
+\subsection{Problem II}
+Here we consider the problem of Travelling Salesman according to the data \textbf{LAU15}. The task is to find the optimal tour connecting 15 cities by means of Simulated Annealing. As an initial temperature $T_0$ we put $T_0 = 1$ and the temperature decreases with multiplier $\alpha = 0.9$ every $5$ iterations. The picture of initial path whose length is equal to $590$ is provided in the figure \ref{fig: 2}.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{tsp0}
+\caption{The initial tour used to initiate the optimization process}
+\label{fig: 2}
+\end{center}
+\end{figure}
+
+We ran this algorithm several times to find two best solutions and non-optimal one. The optimal tour has the length of $291$. It is demonstrated in the figure \ref{fig: 3}. Another tour which differs from the previous one a bit has length $295$ (see fig. \ref{fig: 4}). As an example of the non-optimal route with the length of $319$, we provide it in the figure \ref{fig: 5}.
+
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{tsp1}
+\caption{The optimal tour for the dataset}
+\label{fig: 3}
+\end{center}
+\end{figure}
+
+\begin{figure}[!h]
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.7\linewidth]{tsp2}
+     \caption{A tour which is not optimal a bit}
+	\label{fig: 4}
+   \end{minipage}\hfill
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.7\linewidth]{tsp3}
+     \caption{A tour which is not optimal at all}
+	\label{fig: 5}
+   \end{minipage}
+\end{figure}
+
+To sum up the results of this task, we have to take into account the fact that simulated annealing is not deterministic algorithm so it may provide non-optimal solution in the first its application. Nevertheless, it does not require any calculations of derivatives.
 
 \section{Data structures and design techniques used in algorithms}
 
 
-In the implementation of the algorithms and for random variables generation the Python's package Numpy is used since it allows to vectorize calculations what accelerates the evaluations.
+In the implementation of the algorithms and for random variables generation the Python's package \textbf{Numpy} is used since it allows to vectorize calculations what accelerates the evaluations. Particle Swarm algorithm implementation was taken from the package \textbf{PySwarm}. The implementation of Nelder-Mead method is taken from the package \textbf{Scipy}. For derivation of the gradient and the hessian of the target function in the Problem I we used the well-known package \textbf{autograd}.
 
 
 \section{Conclusion}
-As the result of this work, we considered direct methods of optimization in the cases of one and two variables. The methods were compared by the number of iterations required to obtain the solution with given precision, the number of function evaluations and precision. All of the considered methods except Nelder-Mead method were implemented in Python programming language.
-Discussion for data structures and design techniques which were used in the implementations is provided. The work goals were achieved.
+As the result of this work, we considered stochastic and metaheuristic methods of optimization in application to both continuous and discrete problems of optimization. The methods were compared by the number of iterations required to obtain the solution with given precision, the number of function evaluations, precision and other indicators. The implementations of Differential Evolution and Simulated Annealing (for TSP) methods are provided. Data structures and design techniques which were used in the implementations were discussed. The work goals were achieved.
 
 \section{Appendix}
 Algorithms implementation code is provided in \cite{repogithub}.
