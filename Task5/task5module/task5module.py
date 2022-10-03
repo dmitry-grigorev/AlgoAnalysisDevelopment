@@ -2,23 +2,34 @@ import numpy as np
 
 
 def generate_from_nm(n, m):
+    """
+    :param n: order of graph (# of nodes)
+    :param m: size of graph (# of edges)
+    :return Madj: random adjacency matrix
+    """
+    # generate an array of size n*(n-1)/2
     initial = np.random.permutation([1] * m + [0] * (n * (n - 1) // 2 - m))
     Madj = np.zeros(shape=(n, n), dtype="int")
     l = n - 1
     start = 0
     end = l
+    # then this array is transformed into matrix with upper triangle with its elements
     for i in range(1, n):
         Madj[i - 1, i:] = initial[start:end]
         l = n - i
         start = end
         end += l - 1
+    # then we reflect upper triangle to lower one
     Madj += Madj.T
     return Madj
 
 
-# start - vertex from which dfs will be initiated
-# adj_list - adjacency list of graph
 def dfs_adj(start, adj_list):
+    """
+    :param start: vertex from which dfs will be initiated
+    :param adj_list: adjacency list of graph
+    :return path: contain all visited vertices of component 'start' belongs to
+    """
     # list of visited vertices
     visited = [False] * len(adj_list)
 
@@ -34,16 +45,12 @@ def dfs_adj(start, adj_list):
         start = stack[-1]
         stack.pop()
 
-        # Stack may contain same vertex twice. So
-        # we need to print the popped item only
-        # if it is not visited.
+        # Prevent the current vertex from being push twice into the stack
         if not visited[start]:
             path.append(start)
             visited[start] = True
 
-        # Get all adjacent vertices of the popped vertex s
-        # If an adjacent has not been visited, then push it
-        # to the stack.
+        # push all non-visited neighbors into the stack
         for node in adj_list[start]:
             if not visited[node]:
                 stack.append(node)
@@ -51,6 +58,10 @@ def dfs_adj(start, adj_list):
 
 
 def find_components(adj_list):
+    """
+    :param adj_list: adjacency list of graph
+    :return components: contain numbers of components to which each vertex belongs to
+    """
     n = len(adj_list)
     components = [-1] * n
     i, compnum = 0, 0
@@ -68,50 +79,59 @@ def find_components(adj_list):
 # matrix - adjacency matrix of graph
 # vert_to_find - optional, vertex for which the shortest path should be found
 # with BFS we always reach a vertex from given source using the minimum number of edges
-def bfs_adj(start, matrix, vert_to_find=None):
-    # Visited vector to so that a
-    # vertex is not visited more than
-    # once Initializing the vector to
-    # false as no vertex is visited at
-    # the beginning
-    visited = [False] * len(matrix)
-    q = [start]
+def bfs_adj(start, adj_list, vert_to_find):
+    """
+    :param start: vertex from which bfs will be initiated
+    :param adj_list: adjacency list of graph
+    :param vert_to_find: vertex to which we look for the shortest path
+    :return path: one of the shortest paths from 'vert_to_find' to 'start'
+    """
+
+    if start == vert_to_find:
+        return [start]
+
+    visited = [0] * len(adj_list)  # list of statuses
+    predecessors = [start] * len(adj_list)  # list of the nodes' bfs-predecessors
+    visited[start] = 2
+    q = [start]  # queue
 
     # Set source as visited
     visited[start] = True
-    path = list()
+
     while q:
         vis = q[0]
 
         q.pop(0)
-        # appending current node to path
-        path.append(vis)
 
-        # For every adjacent vertex to
-        # the current vertex
-        for i in range(len(matrix)):
-            if (matrix[vis][i] == 1 and
-                    (not visited[i])):
-                # Push the adjacent node
-                # in the queue
-                q.append(i)
-
-                # set
-                visited[i] = True
-
-                # if we got to vert_to_find, then
-                # we found the shortest path from start to vert_to_find
-                if vert_to_find == i:
-                    path.append(i)
-                    return path
-    return path
+        for node in adj_list[vis]:
+            if node == vert_to_find:  # bfs met searched node
+                # then stop the algo
+                path = [node]
+                prev = vis
+                while prev != start:  # backtracking
+                    path.append(prev)
+                    prev = predecessors[prev]
+                path.append(start)
+                return path
+            if visited[node] == 0:
+                q.append(node)
+                visited[node] = 1
+                predecessors[node] = vis
+        visited[vis] = 2
+    # if queue became empty, then there are no paths
+    print("No paths were found")
+    return None
 
 
 def adj_mat_to_adj_list(matrix):
-    res = dict()
+    """
+    :param matrix: adjacency matrix of graph
+    :return adj_list: adjacency list of the graph
+    """
+    adj_list = dict()
     for i in range(len(matrix)):
-        res[i] = list()
+        adj_list[i] = list()
         for j in range(len(matrix[i])):
             if matrix[i][j] == 1:
-                res[i].append(j)
-    return res
+                adj_list[i].append(j)
+    return adj_list
