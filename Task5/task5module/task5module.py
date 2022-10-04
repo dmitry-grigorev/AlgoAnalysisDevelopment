@@ -75,10 +75,6 @@ def find_components(adj_list):
     return components
 
 
-# start - vertex from which dfs will be initiated
-# matrix - adjacency matrix of graph
-# vert_to_find - optional, vertex for which the shortest path should be found
-# with BFS we always reach a vertex from given source using the minimum number of edges
 def bfs_adj(start, adj_list, vert_to_find):
     """
     :param start: vertex from which bfs will be initiated
@@ -90,13 +86,10 @@ def bfs_adj(start, adj_list, vert_to_find):
     if start == vert_to_find:
         return [start]
 
-    visited = [0] * len(adj_list)  # list of statuses
+    visited = [False] * len(adj_list)  # list of statuses
     predecessors = [start] * len(adj_list)  # list of the nodes' bfs-predecessors
-    visited[start] = 2
-    q = [start]  # queue
-
-    # Set source as visited
     visited[start] = True
+    q = [start]  # queue
 
     while q:
         vis = q[0]
@@ -113,11 +106,11 @@ def bfs_adj(start, adj_list, vert_to_find):
                     prev = predecessors[prev]
                 path.append(start)
                 return path
-            if visited[node] == 0:
+            if not visited[node]:
                 q.append(node)
-                visited[node] = 1
+                visited[node] = True
                 predecessors[node] = vis
-        visited[vis] = 2
+        visited[vis] = True
     # if queue became empty, then there are no paths
     print("No paths were found")
     return None

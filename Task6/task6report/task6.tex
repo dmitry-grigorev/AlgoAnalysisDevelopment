@@ -1,0 +1,127 @@
+\documentclass[12pt, bachelor, substylefile = algo_title.rtx]{disser}
+
+\usepackage[a4paper,
+            left=3cm, right=1.5cm,
+            top=2cm, bottom=2cm,
+	 headsep=1cm, footskip=1cm]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{hyperref}
+\usepackage{amsfonts}
+%\usepackage{indentfirst}
+\usepackage{xcite}
+\usepackage{xr}
+\usepackage{outlines}
+\usepackage{mathtools}
+\usepackage{subcaption}
+%\usepackage{newtxtext,newtxmath}
+\usepackage[final]{pdfpages}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\newcommand{\Hyp}{\ensuremath{\mathbb{H}}}
+\newcommand{\Pb}{\mathcal{P}}
+\newcommand{\ME}{\mathbb{E}}
+\newcommand{\med}{\mathbb{M}}
+\newcommand{\Proba}{\mathbb{P}}
+\newcommand{\VAR}{\mathbb{D}}
+\newcommand{\varD}{\mathbf{D}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\varZ}{\mathbf{Z}}
+\newcommand{\varV}{\mathbf{V}}
+\newcommand{\varW}{\mathbf{W}}
+\newcommand{\varY}{\mathbf{Y}}
+\newcommand{\varX}{\mathbf{X}}
+\newcommand{\varR}{\mathbf{R}}
+\newcommand{\varS}{\mathbf{S}}
+\newcommand{\varU}{\mathbf{U}}
+\newcommand{\ind}{\mathbb{I}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Sample}{\varV_1,\varV_2,\dots,\varV_m}
+\newcommand{\Samplex}{\varX_1,\varX_2,\dots,\varX_n}
+\DeclareMathOperator{\sign}{sign}
+
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{lemma}{Lemma}
+\newtheorem{example}{Example}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conseq}{Consequence}
+
+\setcounter{tocdepth}{2}
+
+
+\begin{document}
+
+\institution{FEDERAL STATE AUTONOMOUS EDUCATIONAL INSTITUTION\\
+OF HIGHER EDUCATION\\
+ITMO UNIVERSITY
+}
+\title{Report\\
+on the practical task No. 6}
+
+
+\topic{\normalfont\scshape %
+Algorithms on graphs. Path search algorithms on weighted graphs}
+\author{Dmitry Grigorev, Maximilian Golovach}
+\group{J4133c}
+\sa{Dr Petr Chunaev}
+\sastatus {}
+
+\city{St. Petersburg}
+\date{2022}
+
+\maketitle
+\section{Goal of the work}
+The goal of this work consists of the following points:
+\begin{outline}
+\1 to become familiar with graphs, ways of their representation and some algorithms of traversing around them,
+\1 to apply these algorithms to one generated graph.
+\end{outline}
+
+\section{Formulation of the problem}
+Suppose we have a graph $G$ which is simple unweighted undirected and built from generation of its adjacency matrix. The subproblems here are:
+\begin{outline}[enumerate]
+\1 some points
+\end{outline}
+
+\section{Brief theoretical part}
+The theory is taken from \cite{erciyes18}.
+
+
+\section{Results}
+
+%\begin{figure}[h]
+%\begin{center}
+%\includegraphics[width=\textwidth]{solutions}
+%\caption{The data and the resulted curves. Additionally zoomed sector of this graph is provided on the right side}
+%\label{fig: 1}
+%\end{center}
+%\end{figure}
+
+\section{Data structures and design techniques used in algorithms}
+
+
+%In the random variables generation and building of adjacency matrix the Python's package \textbf{Numpy} is used due to its convenience. As a tool of drawing the graphs the \textbf{networkx} package is used. In the BFS and DFS the Python's list data structure is applied to organize queue and stack. In the BFS shortest path finding the list of nodes' predecessors is also used in order to remember all built paths (instead of storage of these whole paths themselves). 
+
+
+\section{Conclusion}
+%As the result of this work, we become familiar with graphs, their ways of representation and some ways of traversing. The ways of representation were compared by convenience in practice and in theory according to the density or sparsity of graphs. The results of BFS and DFS were analyzed and considered as plausible. The implementations of BFS, DFS, adjacency list construction and random adjacency matrix generation are provided. Data structures and design techniques which were used in the implementations were discussed. The work goals were achieved.
+
+\section{Appendix}
+Algorithms implementation code is provided in \cite{repogithub}.
+
+{\small \bibliography{biblio}}
+\bibliographystyle{gost2008}
+
+\end{document}

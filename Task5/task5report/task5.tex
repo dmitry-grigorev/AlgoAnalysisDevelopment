@@ -1,0 +1,294 @@
+\documentclass[12pt, bachelor, substylefile = algo_title.rtx]{disser}
+
+\usepackage[a4paper,
+            left=3cm, right=1.5cm,
+            top=2cm, bottom=2cm,
+	 headsep=1cm, footskip=1cm]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{hyperref}
+\usepackage{amsfonts}
+%\usepackage{indentfirst}
+\usepackage{xcite}
+\usepackage{xr}
+\usepackage{outlines}
+\usepackage{mathtools}
+\usepackage{subcaption}
+%\usepackage{newtxtext,newtxmath}
+\usepackage[final]{pdfpages}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\newcommand{\Hyp}{\ensuremath{\mathbb{H}}}
+\newcommand{\Pb}{\mathcal{P}}
+\newcommand{\ME}{\mathbb{E}}
+\newcommand{\med}{\mathbb{M}}
+\newcommand{\Proba}{\mathbb{P}}
+\newcommand{\VAR}{\mathbb{D}}
+\newcommand{\varD}{\mathbf{D}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\varZ}{\mathbf{Z}}
+\newcommand{\varV}{\mathbf{V}}
+\newcommand{\varW}{\mathbf{W}}
+\newcommand{\varY}{\mathbf{Y}}
+\newcommand{\varX}{\mathbf{X}}
+\newcommand{\varR}{\mathbf{R}}
+\newcommand{\varS}{\mathbf{S}}
+\newcommand{\varU}{\mathbf{U}}
+\newcommand{\ind}{\mathbb{I}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Sample}{\varV_1,\varV_2,\dots,\varV_m}
+\newcommand{\Samplex}{\varX_1,\varX_2,\dots,\varX_n}
+\DeclareMathOperator{\sign}{sign}
+
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{lemma}{Lemma}
+\newtheorem{example}{Example}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conseq}{Consequence}
+
+\setcounter{tocdepth}{2}
+
+
+\begin{document}
+
+\institution{FEDERAL STATE AUTONOMOUS EDUCATIONAL INSTITUTION\\
+OF HIGHER EDUCATION\\
+ITMO UNIVERSITY
+}
+\title{Report\\
+on the practical task No. 5}
+
+
+\topic{\normalfont\scshape %
+Algorithms on graphs. Introduction to graphs and basic algorithms on
+graphs}
+\author{Dmitry Grigorev, Maximilian Golovach}
+\group{J4133c}
+\sa{Dr Petr Chunaev}
+\sastatus {}
+
+\city{St. Petersburg}
+\date{2022}
+
+\maketitle
+\section{Goal of the work}
+The goal of this work consists of the following points:
+\begin{outline}
+\1 to become familiar with graphs, ways of their representation and some algorithms of traversing around them,
+\1 to apply these algorithms to one generated graph.
+\end{outline}
+
+\section{Formulation of the problem}
+Suppose we have a graph $G$ which is simple unweighted undirected and built from generation of its adjacency matrix. The subproblems here are:
+\begin{outline}[enumerate]
+\1 we need to get adjacency list from the matrix,
+\1 then discuss when these two ways of graph representation are more convenient as opposed to the second one,
+\1 apply Depth-first-search to find connected components in the graph,
+\1 apply Breadth-first-search to find one of the shortest paths between two arbitrary vertices in the graph,
+\1 analyze the obtained results.
+\end{outline}
+
+\section{Brief theoretical part}
+The theory is taken from \cite{erciyes18}.
+
+\subsection{Basics of graphs}
+Any graph can be formally defined as follows:
+
+\begin{definition}
+A graph $G = (V, E, g)$ is a discrete structure which is defined by a set of \textbf{vertices} (or \textbf{nodes}) $V = V(G)$, a set of \textbf{edges} $E = E(G)$ and a \textbf{relation} $g$ that associates each edge with 2 vertices from $V$.
+\end{definition}
+
+An edge from $V$ is incident to two nodes which are called its \textbf{endpoints}. The number of vertices and edges of a graph are called its \textbf{order} and \textbf{size} correspondingly. It is possible to name an edge by the nodes it is incident to: for example, if two nodes $u, v \in V$ are connected, then we name an edge $(u, v) \in E$ as the edge which connects these two vertices.
+
+\begin{definition}[self-edge]
+A \textbf{self-loop} is an edge with the same endpoints.
+\end{definition}
+
+\begin{definition}[multiple edge]
+A number of edges with the same endpoints are called \textbf{multiple edges}.
+\end{definition}
+
+\begin{definition}[simple graphs and multigraphs]
+\textbf{Simple} graph is a graph without any self-loops and multiple edges. Otherwise, this is a \textbf{multigraph}.
+\end{definition}
+
+In order to traverse around graphs, there are some definitions in the theory of graphs.
+
+\begin{definition}[walks, trails and paths]
+A \textbf{walk} $W = (v_0, e_1, v_1, e_2, \dots, v_{n-1}, e_n, v_n)$ of a graph $G$ with the \textbf{initial} node $v_0$ and the terminal one $v_n$ is an alternating sequence of nodes and edges where each edge $e_i$ is incident to nodes $v_{i-1}$ and $v_i$.\\
+A \textbf{trail} is a walk with no repeated edges.\\
+A \textbf{path} is a trail with no repeated vertices save the initial and terminal ones.
+\end{definition}
+
+It is worth mentioning that in an arbitrary graph two random vertices may have no walks connecting them.
+\begin{definition}[connectivity of graph]
+A graph $G$ is called \textbf{connected} if any pair of two vertices has a path connecting them. Otherwise, this graph is \textbf{disconnected}.
+\end{definition}
+\noindent
+Disconnected graph consists of some connected subgraphs called \textbf{(connected) components}.
+Distance $d(u, v)$ between two nodes $u$ and $v$ is the length of the shortest path between them.
+
+\subsection{Representation ways of graphs}
+\subsubsection{Adjacency matrix}
+An \textbf{adjacency matrix} $A = (a_{ij})_{i,j=1}^n$ of a simple graph $G$ of order $n$ is a matrix where $a_{i,j} = 1$ if there is an edge which joins vertex $i$ with vertex $j$ and $a_{i,j} = 0$ otherwise. In case of an undirected graph its adjacency matrix is symmetric. To store such a matrix it requires $O(n^2)$ of memory.
+\subsubsection{Adjacency list}
+An array of lists with each list representing a vertex and its neighbors (adjacent nodes) in a linked list is a \textbf{adjacency list}. If $n$ and $m$ are order and size of a graph $G$, then the storage of adjacency list requires $O(n+m)$ memory.
+
+\subsection{Two basic algorithms of traversing around graphs}
+\subsubsection{Depth First Search}
+The idea if this algorithm is quite simple: move further firstly as far as it possible. The adjacent nodes (with respect to the starting one) in this algorithm are processed later than those located far away. The algorithm is described in \ref{alg: dfs} where the iterative approach is used with application of stack data structure.
+\begin{algorithm}[!h]
+\caption{DFS (Iterative approach)}
+\label{alg: dfs}
+\begin{algorithmic}
+
+\Require graph $G(V, E)$, starting vertex $v$
+\State \textbf{stack} $S \gets \O$, \textbf{boolean array} $isVisited[n]$\\
+\# initialization
+\For {\textbf{each} $u \in V$}
+	\State $isVisited[u] \gets false$
+\EndFor
+\State $Push(v, S)$
+\While {$S \ne \O$}
+	\State $u \gets Pop(S)$
+	\If {$isVisited[u] = false$}
+		\State $isVisited[u] \gets true$
+		\For {\textbf{each} $w \in V:\ (u, w) \in E$}
+			\State $Push(w, S)$
+		\EndFor
+		\State Process $u$	
+	\EndIf
+\EndWhile
+\Ensure some result of processing of the graph $G$
+\end{algorithmic}
+\end{algorithm}
+
+Time complexity of this algorithm is $O(n+m)$ and space complexity is $O(n)$ due to storage of stack and additional array of statuses.
+
+\subsubsection{Breadth First Search}
+The idea of BFS is opposite to DFS: all close vertices are processes at first and the farthest ones at last. To organize such a way of traversing we have to use queue data structure. The algorithm is presented in \ref{alg: bfs}. Here an array of processing status is also used in order to prevent each node from extra inclusion into the queue. 
+\begin{algorithm}[!h]
+\caption{BFS}
+\label{alg: bfs}
+\begin{algorithmic}
+
+\Require graph $G(V, E)$, starting vertex $v$
+\State \textbf{queue} $Q \gets \O$, \textbf{array} \textbf{boolean} $Status[n]$\\
+\# initialization\\
+\# Status $0$ means 'not visited', $1$ --- 'in queue' or 'visited'
+\For {\textbf{each} $u \in V\symbol{92}\{v\}$}
+	\State $Status[u] \gets false$
+\EndFor
+\State $Status[v] \gets true$
+\State $Enqueue(v, Q)$
+\While {$Q \ne \O$}
+	\State $u \gets Dequeue(Q)$
+		\For {\textbf{each} $w \in V:\ (u, w) \in E$}
+			\If {$Status[w] = false$ }
+				\State $Status[w] \gets true$
+				\State $Enqueue(w, Q)$
+			\EndIf
+		\EndFor
+	\State Process $u$
+\EndWhile
+\Ensure some result of processing of the graph $G$
+\end{algorithmic}
+\end{algorithm}
+
+The important property of the BFS in case of simple undirected unweighted it builds shortest paths automatically thank to its construction. The time complexity is $O(n+m)$ and space complexity is $O(n)$ due to storage of queue and additional array of statuses.
+
+\section{Results}
+\subsection{Ways of representation}
+So, first of all, we generated one random adjacency matrix which provide for us the graph depicted in the figure \ref{fig: 1}.
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.5\textwidth]{graph}
+\caption{The generated graph}
+\label{fig: 1}
+\end{center}
+\end{figure}
+As soon as the adjacency matrix was obtained, we construct the adjacency list of our graph. 
+
+
+Let us analyze the current results. In the graph \ref{fig: 2} several rows of the adjacency matrix are presented. At the same time in the figure \ref{fig: 3} some pairs $(node, adjacent\ nodes)$ of adjacency list are shown. As has been seen, the adjacency matrix looks sparse and it may be inefficient to store it for such a graph and the use of adjacency list is more profitable. In spite of that, determining the adjacency of two arbitrary nodes requires $O(n)$ time in case of adjacency lists and $O(1)$ time when one uses adjacency matrix so in case of dense graphs it is more efficient to use the latter one.
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{madj}
+\caption{Some pairs of nodes and corresponding rows in the adjacency matrix}
+\label{fig: 2}
+\end{center}
+\end{figure}
+
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{ladj}
+\caption{Some pairs of nodes and corresponding neighbors in the adjacency list}
+\label{fig: 3}
+\end{center}
+\end{figure}
+
+\subsection{Search algorithms}
+To determine connected components in the graph and to find some paths between arbitrary pairs of vertices we have applied DFS and BFS correspondingly. In the picture \ref{fig: 4} the output of components search by DFS is illustrated. As one can see, there are $8$ components. On order to visualize the correctness of this algorithms, we provide the figure \ref{fig: 5} of the colored graph. Indeed, the algorithm performed right according to the figure.
+
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{dfsres}
+\caption{Result of DFS application on the graph}
+\label{fig: 4}
+\end{center}
+\end{figure}
+
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.5\textwidth]{comps}
+\caption{The graph with colored vertices with respect to component each of them belongs to}
+\label{fig: 5}
+\end{center}
+\end{figure}
+
+As for BFS, we applied it to specific pairs of nodes using the information from the adjacency lists. The results with found paths are provided in the figure \ref{fig: 6}. For one pair, as expected, no paths were found and here one can figure it out from the results of DFS in the picture \ref{fig: 4}. For another one with two adjacent vertices the found path is just the corresponding edge which connects them. The latter pair here is connected with a bit longer path. Moreover, contingency lists for the nodes in this path are provided. 
+
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{bfsres}
+\caption{Some results of BFS application on the graph: no paths were found, path between neighbors and a bit long path}
+\label{fig: 6}
+\end{center}
+\end{figure}
+
+%\begin{figure}[h]
+%\begin{center}
+%\includegraphics[width=\textwidth]{solutions}
+%\caption{The data and the resulted curves. Additionally zoomed sector of this graph is provided on the right side}
+%\label{fig: 1}
+%\end{center}
+%\end{figure}
+
+\section{Data structures and design techniques used in algorithms}
+
+
+In the random variables generation and building of adjacency matrix the Python's package \textbf{Numpy} is used due to its convenience. As a tool of drawing the graphs the \textbf{networkx} package is used. In the BFS and DFS the Python's list data structure is applied to organize queue and stack. In the BFS shortest path finding the list of nodes' predecessors is also used in order to remember all built paths (instead of storage of these whole paths themselves). 
+
+
+\section{Conclusion}
+As the result of this work, we become familiar with graphs, their ways of representation and some ways of traversing. The ways of representation were compared by convenience in practice and in theory according to the density or sparsity of graphs. The results of BFS and DFS were analyzed and considered as plausible. The implementations of BFS, DFS, adjacency list construction and random adjacency matrix generation are provided. Data structures and design techniques which were used in the implementations were discussed. The work goals were achieved.
+
+\section{Appendix}
+Algorithms implementation code is provided in \cite{repogithub}.
+
+{\small \bibliography{biblio}}
+\bibliographystyle{gost2008}
+
+\end{document}
