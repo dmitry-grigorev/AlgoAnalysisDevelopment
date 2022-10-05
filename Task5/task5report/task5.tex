@@ -86,7 +86,7 @@ graphs}
 \section{Goal of the work}
 The goal of this work consists of the following points:
 \begin{outline}
-\1 to become familiar with graphs, ways of their representation and some algorithms of traversing around them,
+\1 to become familiar with graphs, ways of their representation and some algorithms of traversal around them,
 \1 to apply these algorithms to one generated graph.
 \end{outline}
 
@@ -146,7 +146,7 @@ An \textbf{adjacency matrix} $A = (a_{ij})_{i,j=1}^n$ of a simple graph $G$ of o
 \subsubsection{Adjacency list}
 An array of lists with each list representing a vertex and its neighbors (adjacent nodes) in a linked list is a \textbf{adjacency list}. If $n$ and $m$ are order and size of a graph $G$, then the storage of adjacency list requires $O(n+m)$ memory.
 
-\subsection{Two basic algorithms of traversing around graphs}
+\subsection{Two basic algorithms of traversal around graphs}
 \subsubsection{Depth First Search}
 The idea if this algorithm is quite simple: move further firstly as far as it possible. The adjacent nodes (with respect to the starting one) in this algorithm are processed later than those located far away. The algorithm is described in \ref{alg: dfs} where the iterative approach is used with application of stack data structure.
 \begin{algorithm}[!h]
@@ -178,7 +178,7 @@ The idea if this algorithm is quite simple: move further firstly as far as it po
 Time complexity of this algorithm is $O(n+m)$ and space complexity is $O(n)$ due to storage of stack and additional array of statuses.
 
 \subsubsection{Breadth First Search}
-The idea of BFS is opposite to DFS: all close vertices are processes at first and the farthest ones at last. To organize such a way of traversing we have to use queue data structure. The algorithm is presented in \ref{alg: bfs}. Here an array of processing status is also used in order to prevent each node from extra inclusion into the queue. 
+The idea of BFS is opposite to DFS: all close vertices are processes at first and the farthest ones at last. To organize such a way of traversal we have to use queue data structure. The algorithm is presented in \ref{alg: bfs}. Here an array of processing status is also used in order to prevent each node from extra inclusion into the queue. 
 \begin{algorithm}[!h]
 \caption{BFS}
 \label{alg: bfs}
@@ -283,7 +283,7 @@ In the random variables generation and building of adjacency matrix the Python's
 
 
 \section{Conclusion}
-As the result of this work, we become familiar with graphs, their ways of representation and some ways of traversing. The ways of representation were compared by convenience in practice and in theory according to the density or sparsity of graphs. The results of BFS and DFS were analyzed and considered as plausible. The implementations of BFS, DFS, adjacency list construction and random adjacency matrix generation are provided. Data structures and design techniques which were used in the implementations were discussed. The work goals were achieved.
+As the result of this work, we become familiar with graphs, their ways of representation and some ways of traversal. The ways of representation were compared by convenience in practice and in theory according to the density or sparsity of graphs. The results of BFS and DFS were analyzed and considered as plausible. The implementations of BFS, DFS, adjacency list construction and random adjacency matrix generation are provided. Data structures and design techniques which were used in the implementations were discussed. The work goals were achieved.
 
 \section{Appendix}
 Algorithms implementation code is provided in \cite{repogithub}.

@@ -85,21 +85,173 @@ Algorithms on graphs. Path search algorithms on weighted graphs}
 \section{Goal of the work}
 The goal of this work consists of the following points:
 \begin{outline}
-\1 to become familiar with graphs, ways of their representation and some algorithms of traversing around them,
-\1 to apply these algorithms to one generated graph.
+\1 to become familiar with algorithms on traversal and shortest path building in simple undirected weighted graphs,
+\1 to apply these algorithms to one generated graph,
+\1 to study $A^*$ algorithm for traversal on a grid with obstacles and apply it on arbitrary grid.
 \end{outline}
 
 \section{Formulation of the problem}
-Suppose we have a graph $G$ which is simple unweighted undirected and built from generation of its adjacency matrix. The subproblems here are:
+\subsection{Weighted graph traversal}
+Suppose we have a graph $G$ which is simple undirected weighted and built from generation of its adjacency matrix. The subproblems here are:
 \begin{outline}[enumerate]
-\1 some points
+\1 find the shortest paths between one chosen node of the graph and all others by means of Dijkstra's and Bellman-Ford's algorithms,
+\1 measure the execution time of these algorithms in practice and compare them by time.
 \end{outline}
+\subsection{Grid traversal}
+Let $G$ be a grid with obstacles in some its nodes. As soon as two non-obstacle nodes are selected, we have to find path connecting them. The task here is to apply $A^*$ algorithm to do it for one fixed start point (source) and some arbitrary end points (targets).
 
 \section{Brief theoretical part}
-The theory is taken from \cite{erciyes18}.
+\subsection{Dijkstra's and Bellman-Ford's algorithms}
+The theory for this section is taken from \cite{erciyes18}.
 
+Let $G = G(V, E, w)$ be a simple undirected weighted (and connected) graph with positive weights defined by $w:\ V \times V \to \mathbb{R}_+$ (or $w:\ E \to \mathbb{R}_+$.
+
+The idea of this algorithm is as follows: start from a source vertex $v_s$ and initially
+label distance values of all neighbors of $v_s$ with the weight of edges from $v_s$, $0$ and the
+rest of the vertices with infinity distance values and the distance value of s to itself as
+0. The neighbor vertex $v$ which has the smallest distance to $v_s$ is then included in the set of
+visited vertices. Further at each iteration, distance value and predecessor of any
+neighbor $u$ of the newly included vertex $v$ has been updated if distance through $v$ is
+smaller than its current distance. This algorithm processes all vertices and eventually
+forms a spanning tree $T$ rooted at source vertex $v_s$. The algorithm is described in \ref{alg: dij}
+
+\begin{algorithm}[!h]
+\caption{Dijkstra's algorithm}
+\label{alg: dij}
+\begin{algorithmic}
+
+\Require graph $G(V, E, w)$, starting vertex $v_s$
+\State $n \gets |V|$
+\State  numeric $dist[n]$ --- an array of all shortest distances w.r.t. $v_s$
+\State $T \gets \O$ --- shortest path tree
+\State $V_{np} \gets V$ --- set of non-processed vertices\\
+\# initialization
+\For {\textbf{each} $u \in V\symbol{92}\{v_s\}$}
+	\State $dist[u] \gets \infty$
+\EndFor
+\State $dist[v_s] \gets 0$
+\While {$V_{np} \ne \O$}
+	\State	$v \gets$ vertix with minimum distance in $V_{np}$
+	\For {\textbf{each} $u \in V:\ (u, v) \in E$}
+		\If {$dist[u] > dist[v] + w(u, v)$}
+			\State $dist[u] \gets dist[v] + w(u, v)$
+		\EndIf
+	\EndFor
+	\State $V_{np} \gets V_{np}\symbol{92}\{v\}$
+	\State $T \gets T \cup \{v\}$
+\EndWhile
+\Ensure $dist$, $T$
+\end{algorithmic}
+\end{algorithm}
+
+The time complexity of this algorithm is $O(|V|^2)$ since we process all vertices at each iteration and find optimal edge using standard consequential search required $O(|V|)$ comparisons. Indeed the time complexity can be optimized, for example, by means of priority queue which stores vertices with optimal distances as keys.
+
+
+Dijkstra's algorithm do not succeed in the case of graph with negative weights. One can encounter this case in the fields of currency trading and minimum cost flows. The outcome of this algorithm is either an array of optimal distances from the source vertex $v_s$ or the report on that there is a negative cycle in the graph. The algorithm performs relaxation for each vertex
+progressively, that is $1,\dots, |V|-1$ hops away from the source vertex $v_s$ to allow changes
+along the longest path which is $|V|-1$ hops. One can see the description of this algorithm in \ref{alg: bf}.
+
+\begin{algorithm}[!h]
+\caption{Bellman-Ford's algorithm}
+\label{alg: bf}
+\begin{algorithmic}
+
+\Require graph $G(V, E, w)$, starting vertex $v_s$
+\State $n \gets |V|$
+\State  numeric $dist[n]$ --- an array of all shortest distances w.r.t. $v_s$
+\# initialization
+\For {\textbf{each} $u \in V\symbol{92}\{v_s\}$}
+	\State $dist[u] \gets \infty$
+\EndFor
+\State $dist[v_s] \gets 0$
+\For {$\_ = 1, \dots, n-1$}
+	\For {\textbf{each} $(u, v) \in E$}
+		\If {$dist[u] > dist[v] + w(u, v)$}
+			\State $dist[u] \gets dist[v] + w(u, v)$
+		\EndIf
+	\EndFor
+\EndFor
+\For {\textbf{each} $(u, v) \in E$}
+		\If {$dist[u] + w(u, v) > dist[v]$}
+			\textbf{return} "there is a negative cycle"
+		\EndIf
+\EndFor
+\textbf{return} "there are no negative cycles"
+\Ensure $dist$ or signal on having a negative cycle
+\end{algorithmic}
+\end{algorithm}
+
+On the contrary to the Dijkstra's algorithm with default implementation, the time complexity of Bellman-Ford's one is $O(|V||E|)$. 
+
+\subsection{$A^*$ algorithm}
+$A^*$ algorithm is like Dijkstra’s one in finding a shortest path. $A^*$ is like greedy algorithm since it finds optimal solution at each step and is heuristic since it uses a heuristic to guide itself. To be short, the idea of algorithm is that it combines the pieces of information that Dijkstra’s Algorithm uses (favoring vertices that are close to the starting point) and information on vertices that are close to the goal and make a choice in favor to them. The cost function $f(v)$ consists of two members $f(v) = g(v) + h(v)$. $g(v)$ represents the exact cost of the path from the starting point to any vertex $v$, and $h(v)$ represents the heuristic estimated cost from vertex $v$ to the target. Each time through the main loop, it examines the vertex $v$ that has the lowest value $f(v)$. It is better to use priority queue here to store vertices with $f(v)$ as key.
+
+The time complexity of the algorithm is $O(|E|)$ what makes it attractive.
 
 \section{Results}
+\subsection{Graph traversal}
+First of all, we generated one random adjacency matrix for a simple undirected weighted graph with $n = |V| = 100,\ m = |E| = 500$ and weights randomly chosen from the set \{20, 30, 50, 100, 200\}. Further, we need to find shortest paths from one of the vertices to the rest ones using Dijkstra's and Bellman-Ford's algorithms. Here we are more interested in the perfomance of algorithms. In the picture \ref{fig: 1} one can see the execution times. As has been seen, Dijkstra's algorithm performed more quickly what agrees with theoretical estimates of time complexity of considering algorithms (at least since $n < m$ and so $n^2 < nm$). 
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.75\textwidth]{times1}
+\caption{Some output of Dijkstra's algorithm and measured time of its execution on the graph}
+\label{fig: 1}
+\end{center}
+\end{figure}
+
+
+Nevertheless, these results can not be considered as general since there are too many factor that influence on time execution. Because of this we conducted the experiment where we applied two considering algorithms 5 times to the same graph and starting node and calculated mean time of execution. The results are on the picture \ref{fig: 2} and we here conclude the same: Dijkstra's algorithm performs better in terms of time execution than Bellman-Ford's one.
+
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.75\textwidth]{times2}
+\caption{Some output of Bellman-Ford's algorithm and measured time of its execution on the graph}
+\label{fig: 2}
+\end{center}
+\end{figure}
+
+\subsection{Grid traversal}
+We have generated the maze with sizes $10\times20$ with 40 obstacles which is illustrated in the figure \ref{fig: 3}. To traverse around the grid we use 4-direction movement and for $A^*$ algorithm we apply Manhattan distance heuristics. The results of application of the algorithm are demonstrated in the graphs \ref{fig: all}. Here we can see that in the right bottom graph the algorithm provided non-optimal solution as opposed to the rest cases. This is explained by the heuristic nature of the algorithm.
+
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{maze}
+\caption{The generated maze. Red cells are obstacles}
+\label{fig: 3}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[!h]
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.7\linewidth]{maze1}
+	\label{fig: 4}
+   \end{minipage}\hfill
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.7\linewidth]{maze2}
+	\label{fig: 5}
+   \end{minipage}\\
+\begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.7\linewidth]{maze3}
+	\label{fig: 6}
+   \end{minipage}\hfill
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.7\linewidth]{maze4}
+	\label{fig: 7}
+   \end{minipage}\\
+\centering
+\begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.7\linewidth]{maze5}
+	\label{fig: 8}
+   \end{minipage}
+\caption{Paths to the different cells (yellow) from one (cyan cell)}
+\label{fig: all}
+\end{figure}
 
 %\begin{figure}[h]
 %\begin{center}
@@ -110,13 +262,13 @@ The theory is taken from \cite{erciyes18}.
 %\end{figure}
 
 \section{Data structures and design techniques used in algorithms}
-
+In the random variables generation and building of adjacency matrix the Python's package \textbf{Numpy} is used due to its convenience. In the implementation we applied an implementation of priority queue from the package \textbf{heapq} which provides interface to use the common Python list as a heap.
 
 %In the random variables generation and building of adjacency matrix the Python's package \textbf{Numpy} is used due to its convenience. As a tool of drawing the graphs the \textbf{networkx} package is used. In the BFS and DFS the Python's list data structure is applied to organize queue and stack. In the BFS shortest path finding the list of nodes' predecessors is also used in order to remember all built paths (instead of storage of these whole paths themselves). 
 
 
 \section{Conclusion}
-%As the result of this work, we become familiar with graphs, their ways of representation and some ways of traversing. The ways of representation were compared by convenience in practice and in theory according to the density or sparsity of graphs. The results of BFS and DFS were analyzed and considered as plausible. The implementations of BFS, DFS, adjacency list construction and random adjacency matrix generation are provided. Data structures and design techniques which were used in the implementations were discussed. The work goals were achieved.
+As the result of this work, we become familiar with some traversal algorithms on weighted graphs. The algorithms of Dijkstra and Bellman-Ford were applied to generated graph several times and as a result were compared by their execution time and it was conclude both from the theory and the results that Dijkstra's algorithm performed more quickly. As for the traversal around grids, $A^*$ algorithm was applied to find 5 different paths and, as has been seen, it does not guarantee to find optimal solution but it performs quickly. The implementations for Dijkstra's, Bellman-Ford's and $A^*$ algorithms are provided. Data structures and design techniques which were used in the implementations were discussed. The work goals were achieved.
 
 \section{Appendix}
 Algorithms implementation code is provided in \cite{repogithub}.

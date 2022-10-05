@@ -2,7 +2,6 @@ import numpy as np
 from heapq import heappush, heappop
 import matplotlib.pyplot as plt
 
-
 def generate_from_nm_weighted(n, m, possibleweights=None):
     """
     Generate random adjacency matrix for simple undirected weighted
@@ -34,13 +33,17 @@ def generate_from_nm_weighted(n, m, possibleweights=None):
 # A utility function to find the vertex with
 # minimum distance value, from the set of vertices
 # not yet included in shortest path tree
-def minDistance(matrix, dist, sptSet):
-    # Initialize minimum distance for next node
+def minDistance(adjMatrix, dist, sptSet):
+    """
+    :param adjMatrix: adjacency matrix of graph
+    :param dist: list of distances to one node
+    :param sptSet: shortest path tree
+    :return: minimum value from dist across nodes which are not in SPT
+    """
     minimum = float("Inf")
     min_index = -1
-    # Search not nearest vertex not in the
-    # shortest path tree
-    for v in range(len(matrix)):
+
+    for v in range(len(adjMatrix)):
         if dist[v] < minimum and not sptSet[v]:
             minimum = dist[v]
             min_index = v
@@ -51,63 +54,52 @@ def minDistance(matrix, dist, sptSet):
 # Function that implements Dijkstra's single source
 # the shortest path algorithm for a graph represented
 # using adjacency matrix representation
-def dijkstra(matrix, src):
-    dist = [float("Inf")] * (len(matrix))
+def dijkstra(adjMatrix, src):
+    """
+    :param adjMatrix: adjacency matrix of simple undirected weidhted graph
+    :param src: source node
+    :return dist: list of the shortest distances to all vertices
+    """
+    dist = [float("Inf")] * (len(adjMatrix))
     dist[src] = 0
-    sptSet = [False] * (len(matrix))
+    sptSet = [False] * (len(adjMatrix))
 
-    for i in range((len(matrix))):
+    for i in range((len(adjMatrix))):
 
-        # Pick the minimum distance vertex from
-        # the set of vertices not yet processed.
-        # u is always equal to src in first iteration
-        u = minDistance(matrix, dist, sptSet)
+        u = minDistance(adjMatrix, dist, sptSet)
 
-        # Put the minimum distance vertex in the
-        # shortest path tree
         sptSet[u] = True
 
-        # Update dist value of the adjacent vertices
-        # of the picked vertex only if the current
-        # distance is greater than new distance and
-        # the vertex in not in the shortest path tree
-        for v in range(len(matrix)):
-            if (matrix[u][v] > 0 and
+        for v in range(len(adjMatrix)):
+            if (adjMatrix[u][v] > 0 and
                     not sptSet[v] and
-                    dist[v] > dist[u] + matrix[u][v]):
-                dist[v] = dist[u] + matrix[u][v]
+                    dist[v] > dist[u] + adjMatrix[u][v]):
+                dist[v] = dist[u] + adjMatrix[u][v]
 
     return dist
 
 
-def bellman_ford(matrix, src):
-    # Step 1: Initialize distances from src to all other vertices
-    # as INFINITE
-    dist = [float("Inf")] * len(matrix)
+def bellman_ford(adjMatrix, src):
+    """
+    :param adjMatrix: adjacency matrix of simple undirected weidhted graph
+    :param src: source node
+    :return dist: list of the shortest distances to all vertices or notification on having negative cycles
+    """
+    dist = [float("Inf")] * len(adjMatrix)
     dist[src] = 0
 
-    # Step 2: Relax all edges |V| - 1 times. A simple shortest
-    # path from src to any other vertex can have at-most |V| - 1
-    # edges
-    for _ in range(len(matrix) - 1):
-        # Update dist value and parent index of the adjacent vertices of
-        # the picked vertex. Consider only those vertices which are still in
-        # queue
-        for i in range(len(matrix)):
+    #relaxation
+    for _ in range(len(adjMatrix) - 1):
+        for i in range(len(adjMatrix)):
             j = 0
-            for w in matrix[i]:
+            for w in adjMatrix[i]:
                 if w != 0 and dist[i] != float("Inf") and dist[i] + w < dist[j]:
                     dist[j] = dist[i] + w
                 j += 1
 
-    # Step 3: check for negative-weight cycles. The above step
-    # guarantees the shortest distances if graph doesn't contain
-    # negative weight cycle. If we get a shorter path, then there
-    # is a cycle.
-
-    for i in range(len(matrix)):
+    for i in range(len(adjMatrix)):
         j = 0
-        for w in matrix[i]:
+        for w in adjMatrix[i]:
             if w != 0 and dist[i] != float("Inf") and dist[i] + w < dist[j]:
                 print("Graph contains negative weight cycle")
                 return []
@@ -118,12 +110,23 @@ def bellman_ford(matrix, src):
 
 
 def generate_maze(length, width, numobstacles):
+    """
+    :param length: length of maze
+    :param width: width of maze
+    :param numobstacles: number of obstacles to generate
+    :return: list of lists which described maze
+    """
     numcells = length * width
     return np.random.permutation(['X'] * numobstacles + [' '] * (numcells - numobstacles)).reshape(
         (width, length)).tolist()
 
 
 def neighbors(maze, node):
+    """
+    :param maze: maze where node lies
+    :param node: node of maze for which we want to find neighbors
+    :return list of neighboring nodes:
+    """
     width = len(maze)
     length = len(maze[0])
     neigh = list()
@@ -139,6 +142,13 @@ def neighbors(maze, node):
 
 
 def astar(maze, start, end, heuristics):
+    """
+    :param maze: maze which is traversed
+    :param start: node from which we look for path
+    :param end: node to which we look for path
+    :param heuristics: heuristic function for the algorithm
+    :return: found path between start and end or failure notification
+    """
     visited = set()
     Q = []
     inQ = set()
@@ -150,10 +160,8 @@ def astar(maze, start, end, heuristics):
     heappush(Q, (f[start], start))
     inQ.add(start)
     while Q:
-        # print("im here")
         curr = heappop(Q)
         inQ.remove(curr[1])
-        # print((Q, inQ))
         if curr[1] == end:
             path = [end]
             prev = predecessors[curr[1]]
@@ -173,7 +181,6 @@ def astar(maze, start, end, heuristics):
                     if node not in inQ:
                         heappush(Q, (f[node], node))
                         inQ.add(node)
-
     return "fail"
 
 
@@ -193,9 +200,10 @@ def plot_maze(maze, start=None, end=None):
     if end is not None:
         X[end[0], end[1], 0] = 255
         X[end[0], end[1], 1] = 255
-        #X[end[0], end[1], 2] = 2
+        # X[end[0], end[1], 2] = 2
     fig, ax = plt.subplots(facecolor="white")
     ax.imshow(X, interpolation='nearest')
+
     def format_coord(x, y):
         col = int(x + 0.5)
         row = int(y + 0.5)
@@ -208,4 +216,5 @@ def plot_maze(maze, start=None, end=None):
     ax.format_coord = format_coord
     plt.xticks(np.arange(0, 20, step=1))
     plt.yticks(np.arange(0, 10, step=1))
+    plt.grid(True, which="minor")
     plt.show()
