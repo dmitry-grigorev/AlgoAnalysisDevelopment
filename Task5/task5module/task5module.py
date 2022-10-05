@@ -3,6 +3,7 @@ import numpy as np
 
 def generate_from_nm(n, m):
     """
+    Generate random adjacency matrix for simple undirected unweighted graph
     :param n: order of graph (# of nodes)
     :param m: size of graph (# of edges)
     :return Madj: random adjacency matrix
