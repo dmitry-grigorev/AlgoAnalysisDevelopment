@@ -84,7 +84,7 @@ def plot_exectime(times: np.ndarray, fitfunc, strfitfunc: str):
     ax = fig.add_subplot(1, 1, 1)
     plt.scatter(x=n_seq, y=times, c="b")
     plt.plot(n_seq, fit[1] + fit[0]*fitfunc(n_seq), label = "$y = {}$".format(round(fit[0], 5)*1e5) +\
-                                                            "$\dot 10^{-5}$" + strfitfunc, c="r")
+                                                            "$\cdot 10^{-5}$" + strfitfunc, c="r")
     plt.xlabel("Number of nodes")
     plt.ylabel("Execution time (in milliseconds)")
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
