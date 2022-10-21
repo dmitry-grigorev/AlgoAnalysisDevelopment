@@ -3,6 +3,7 @@ from typing import List
 import copy
 import timeit
 import matplotlib.pyplot as plt
+from Task6.task6module.task6module import generate_from_nm_weighted
 
 
 def generate_from_n_full_weighted_directed_graph(n, possibleweights=None):
@@ -83,7 +84,7 @@ def plot_exectime(times: np.ndarray, fitfunc, strfitfunc: str):
     fig = plt.figure(facecolor="white")
     ax = fig.add_subplot(1, 1, 1)
     plt.scatter(x=n_seq, y=times, c="b")
-    plt.plot(n_seq, fit[1] + fit[0]*fitfunc(n_seq), label = "$y = {}$".format(round(fit[0], 5)*1e5) +\
+    plt.plot(n_seq, fit[1] + fit[0] * fitfunc(n_seq), label="$y = {}$".format(round(fit[0], 5) * 1e5) + \
                                                             "$\cdot 10^{-5}$" + strfitfunc, c="r")
     plt.xlabel("Number of nodes")
     plt.ylabel("Execution time (in milliseconds)")
@@ -92,32 +93,34 @@ def plot_exectime(times: np.ndarray, fitfunc, strfitfunc: str):
     ax.grid(True)
 
     return None
-    # fit[0], ggplot() + geom_point(aes(x=n_seq, y=times)) + xlab("Array size") + \
-    #  ylab("Execution time (in milliseconds)") + geom_line(aes(x=n_seq, y=fit[1] + fit[0] * fitfunc(n_seq)),
-    #                                                      color="red", size=2, alpha=0.5)
 
 
-def plot_algo_complexity_info(maxn, fitfunc, strfitfunc: str):
+def plot_algo_complexity_info(maxn: int, fitfunc: callable, strfitfunc: str):
     times = np.zeros(maxn, dtype=float)
+    weights = [10, 20, 30, 50, 100, 300]
     for _ in range(5):
-        times += test_time_complexity_APSP(generate_from_n_full_weighted_directed_graph(maxn), maxn)
+        times += test_time_complexity_APSP(generate_from_n_full_weighted_directed_graph(maxn, weights), maxn)
     return plot_exectime(times / 5, fitfunc, strfitfunc)
 
 
 class Graph:
 
-    def __init__(self, vertices):
-        self.V = vertices  # No. of vertices
+    def __init__(self, Madj: List[list]):
+        self.V = len(Madj)  # No. of vertices
         self.graph = []
+        for i in range(self.V):
+            for j in range(i, self.V):
+                if i != j and Madj[i][j] != 0.:
+                    self.graph.append([i, j, Madj[i][j]])
         # to store graph
 
     # function to add an edge to graph
-    def addEdge(self, u, v, w):
+    def addEdge(self, u: int, v: int, w):
         self.graph.append([u, v, w])
 
     # A utility function to find set of an element i
     # (truly uses path compression technique)
-    def find(self, parent, i):
+    def find(self, parent: list, i: int):
         if parent[i] != i:
             # Reassignment of node's parent to root node as
             # path compression requires
@@ -158,9 +161,7 @@ class Graph:
         # weight.  If we are not allowed to change the
         # given graph, we can create a copy of graph
 
-        # structure of edge is [from, to, weight], so we are sorting by 2nd param
-        self.graph = sorted(self.graph,
-                            key=lambda item: item[2])
+        self.graph = sorted(self.graph, key=lambda item: item[2])
 
         parent = []
         rank = []
@@ -193,3 +194,23 @@ class Graph:
         for u, v, weight in result:
             minimum_cost += weight
         return result, minimum_cost
+
+
+def test_time_complexity_Kruskal(Madj: np.ndarray, n):
+    exectime = np.zeros(n, dtype=float)
+    g = Graph(Madj=Madj.tolist())
+    subGraph = Graph([[]])
+    for i in range(1, n + 1):
+        subGraph.graph.append(g.graph[i-1])
+        start = timeit.default_timer()
+        subGraph.KruskalMST()
+        exectime[i - 1] = (timeit.default_timer() - start) * 1000
+    return exectime
+
+
+def plot_Kruskal_complexity_info(maxn: int, fitfunc: callable, strfitfunc: str):
+    times = np.zeros(maxn*(maxn-1)//2, dtype=float)
+    weights = [10, 20, 30, 50, 100, 300]
+    for _ in range(5):
+        times += test_time_complexity_Kruskal(generate_from_nm_weighted(maxn, maxn*(maxn-1)//2, weights), maxn*(maxn-1)//2)
+    return plot_exectime(times / 5, fitfunc, strfitfunc)
