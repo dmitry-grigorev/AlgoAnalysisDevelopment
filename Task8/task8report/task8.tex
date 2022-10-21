@@ -1,0 +1,313 @@
+\documentclass[12pt, bachelor, substylefile = algo_title.rtx]{disser}
+
+\usepackage[a4paper,
+            left=3cm, right=1.5cm,
+            top=2cm, bottom=2cm,
+	 headsep=1cm, footskip=1cm]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{hyperref}
+\usepackage{amsfonts}
+%\usepackage{indentfirst}
+\usepackage{xcite}
+\usepackage{xr}
+\usepackage{outlines}
+\usepackage{mathtools}
+\usepackage{subcaption}
+%\usepackage{newtxtext,newtxmath}
+\usepackage[final]{pdfpages}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\newcommand{\Hyp}{\ensuremath{\mathbb{H}}}
+\newcommand{\Pb}{\mathcal{P}}
+\newcommand{\ME}{\mathbb{E}}
+\newcommand{\med}{\mathbb{M}}
+\newcommand{\Proba}{\mathbb{P}}
+\newcommand{\VAR}{\mathbb{D}}
+\newcommand{\varD}{\mathbf{D}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\varZ}{\mathbf{Z}}
+\newcommand{\varV}{\mathbf{V}}
+\newcommand{\varW}{\mathbf{W}}
+\newcommand{\varY}{\mathbf{Y}}
+\newcommand{\varX}{\mathbf{X}}
+\newcommand{\varR}{\mathbf{R}}
+\newcommand{\varS}{\mathbf{S}}
+\newcommand{\varU}{\mathbf{U}}
+\newcommand{\ind}{\mathbb{I}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Sample}{\varV_1,\varV_2,\dots,\varV_m}
+\newcommand{\Samplex}{\varX_1,\varX_2,\dots,\varX_n}
+\DeclareMathOperator{\sign}{sign}
+
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{lemma}{Lemma}
+\newtheorem{example}{Example}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conseq}{Consequence}
+
+\setcounter{tocdepth}{2}
+
+
+\begin{document}
+
+\institution{FEDERAL STATE AUTONOMOUS EDUCATIONAL INSTITUTION\\
+OF HIGHER EDUCATION\\
+ITMO UNIVERSITY
+}
+\title{Report\\
+on the practical task No. 8}
+
+
+\topic{\normalfont\scshape %
+Practical analysis of advanced algorithms}
+\author{Dmitry Grigorev, Maximilian Golovach}
+\group{J4133c}
+\sa{Dr Petr Chunaev}
+\sastatus {}
+
+\city{St. Petersburg}
+\date{2022}
+
+\maketitle
+\section*{Goal of the work}
+The goal of this work is to consider two algorithms:
+\begin{outline}
+\1 Kruskal's algorithm for Minimal Spanning Tree construction,
+\1 Improved All-Pairs Shortest Paths algorithm
+\end{outline}
+in terms of their theoretical foundations, theoretical properties, i.e. time and space complexity, and obtain an estimate on time complexity empirically. Furthermore, we have to implement this algorithms to become familiar with the complexity of their implementation in code.
+
+The work is organized as follows: the chapter \ref{ch: 1} corresponds to the analysis of Kruskal's algorithm. The chapter \ref{ch: 2} is devoted to Improved All-Pairs Shortest Paths algorithm.
+
+\chapter{Kruskal's algorithm}
+\label{ch: 1}
+\section{Formulation of the problem}
+Suppose we are given a connected weighted undirected graph $G(V, E, W)$. The task is to find in the graph Minimum Spanning Tree (MST) by means of Kruskal's algorithm as well as:
+\begin{outline}
+\1 become familiar with the algorithm,
+\1 examine its time complexity and compare it with theoretical result,
+\1 provide the information on techniques and data structures used in the implementation of the algorithm.
+\end{outline}
+
+\section{Brief theoretical part}
+Kruskal's's algorithm is an algorithm that finds Minimal Spanning Tree. 
+
+A Spanning tree is a subset to a connected graph $G$, where all the edges are connected, i.e, one can traverse to any edge from a particular edge with or without intermediates. Also, a spanning tree must not have any cycle in it by definition. Thus we can say that if there are $|V| = N$ vertices in a connected graph then the number of edges that a spanning tree may have is $N-1$.
+
+As for a minimum spanning tree (MST) (or minimum weight spanning tree) for a connected weighted undirected graph, it is a Spanning tree that has a weight less than or equal to the weight of every other spanning tree. The weight of a spanning tree is the sum of weights given to each edge of the spanning tree.
+
+The algorithm description is as follows:
+\begin{outline}[enumerate]
+\1 Sort all given graph's edges by weight ascending.
+\1 Pick the smallest edge. Check if it forms a cycle with the spanning tree formed so far. If cycle is not formed, include this edge. Else, discard it. 
+\1 Repeat the step 2 until there are $N-1$ edges in your spanning tree.
+\end{outline}
+
+\subsection{Some MST application examples}
+The standard application is to tackle a problem like phone network design. You have a business with several offices; you want to lease phone lines to connect the offices with each other, and the phone company charges different amounts of money to connect different pairs of cities. You want a set of lines that connects all your offices with a minimum total cost. It directly resulted in that the solution for this problem should be presented as a spanning tree, since if a network isn’t a tree you can always remove some edges and save money. A less obvious application is that the minimum spanning tree can be used to approximately solve the traveling salesman problem. A convenient formal way of defining this problem is to find the shortest path that visits each point at least once. 
+
+\subsection{Complexity analysis}
+The time complexity of the algorithm is $O(|E| \log |E|)$ or $O(|V| \log |E|)$. Sorting of edges by means of Tim Sort takes $O(|E| \log |E|)$ time. After sorting, we iterate through all edges and apply the find-union algorithm to check whether current edges reduce the number of connected components. The find and union operations can take at most $O(\log |V|)$ time. The value of $|E|$ can be at most $O(|V|^2)$, so $O(\log |V|)$ is $O(\log |E|)$ the same. Therefore, the overall time complexity is $O(|E| \log |E|)$ or $O(|V| \log |E|)$.
+
+As for the space complexity, if one uses Tim Sort, it requires $O(|E|)$. Furthermore, the resulted spanning tree requires $O(|E|)$ memory. That is why the space complexity of Kruskal's algorithm is $O(|E|)$.
+
+\section{Results}
+At first we tested our implementation and the algorithm itself on whether they work properly. Two graphs we tested the algorithm on are presented in the figures \ref{fig: 01} and \ref{fig: 03}. The resulted MSTs of these graphs are provided in the figures \ref{fig: 02} and \ref{fig: 04} correspondingly. One can visually check the MSTs' optimality according to the graphs. 
+
+\begin{figure}[!h]
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.9\linewidth]{kgraph1}
+	\caption{Arbitrary graph with 5 nodes}
+	\label{fig: 01}
+   \end{minipage}\hfill
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.9\linewidth]{kgraph1res}
+	\caption{The resulted MST for the graph}
+	\label{fig: 02}
+   \end{minipage}\\
+\end{figure}
+
+\begin{figure}[!h]
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.9\linewidth]{kgraph2}
+	\caption{Arbitrary graph with 7 nodes}
+	\label{fig: 03}
+   \end{minipage}\hfill
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.9\linewidth]{kgraph2res}
+	\caption{The resulted MST for the graph}
+	\label{fig: 04}
+   \end{minipage}\\
+\end{figure}
+
+As soon as we verified our implementation, we conducted the experiment on measuring of time complexity estimate. The test was performed on graphs with varying number of edges $|E|$. Here $|E| = 1,\dots,1250$. For each $|E|$ 5 measurements were executed to calculate mean time complexity in order to reduce the influence of outliers on the results. The results are presented in the figure \ref{fig: 05} where one can see the fitted curve which surely corresponds to the theoretical time complexity of $O(|E|\log |E|)$.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{Kruskalcomplexity}
+\caption{Results of time complexity measurements on graphs with $n = |E|$ edges. The points are the mean execution times across 5 trials for each $n = 1,\dots,1250$. The line is fitted to the points.}
+\label{fig: 05}
+\end{center}
+\end{figure}
+
+If one wants to predict the expected time of execution for the graphs of larger number of edges, according to the fitted line they may expect for $n = |E| = 5000$ the execution time of $\approx 0.43$ milliseconds, for $n = 10000$ --- $\approx 1 $ second and for $n = 100000$ --- $\approx 11.51$ seconds what is quite fast even for large graphs.
+
+\section{Data structures and design techniques used in algorithms}
+In the random variables generation and building of adjacency matrix the Python's package \textbf{Numpy} is used due to its convenience. As a tool of drawing graphs the \textbf{networkx} package is used. To store and process graph here we used the approach of adjacency lists since multiple edges are allowed. The implementation of Tim Sort is provided by standard Python function \textbf{sorted}. The implementation of Kruskal's algorithm also includes the approach \textbf{Union-Find} \cite{Conchon07} to detect cycles.
+
+\chapter{Improved All-Pairs Shortest Paths algorithm}
+\label{ch: 2}
+\section{Formulation of the problem}
+Suppose we are given a simple weighted directed graph $G(V, E, W)$. $W$ may contain negative weights but negative cycles are not allowed. The task is to apply Improved All-Pairs Shortest Paths algorithm to find all shortest paths for each pair of nodes in the graph and also:
+\begin{outline}
+\1 become familiar with the algorithm,
+\1 examine its time complexity and compare it with theoretical result,
+\1 provide the information on techniques and data structures used in the implementation of the algorithm.
+\end{outline}
+\section{Brief theoretical part}
+The theory is taken from \cite{Cormen09}.
+
+Let $G(V, E, W)$ be a simple weighted directed graph, $W$ may contain negative components. The task is to find all shortest (in terms of $W$) paths between each pair of nodes. Moreover, it has zeros on main diagonal and $\infty$ in the components which correspond to the edges not presented in the graph. Let $n = |V|$.
+
+Let $\{L^{(k)} = (l^{k}_{ij})\}$ be the sequence of matrices defined the minimum weight of each path where $m$ indicates that any path has at most $m$ edges. For $m = 0$ the matrix $L^{(0)}$ looks as follows:
+\begin{equation*}
+l^{(0)}_{ij} = 
+\begin{cases}
+0, \text{ if }i = j,\\
+\infty, \text{ if } i \ne j.
+\end{cases}
+\end{equation*}
+For $m \ge 1$ $l^{(m)}_{ij}$ are defined recursively:
+\[ l^{(m)}_{ij} = \min \left \{ l^{(m-1)}_{ij}, \min_{k=1,\dots,n}\{l^{(m-1)}_{ik} + w_{kj}\} \right \} \underbrace{= \min_{k=1,\dots,n}\{l^{(m-1)}_{ik} + w_{kj}\}}_{\text{since } w_{jj} = 0\ \forall j}. \]
+
+By the definition any shortest path has at most $n-1$ edges so
+\[ \forall \ i, j\ l^{(n-1)}_{ij} = l^{(n)}_{ij} = l^{(n+1)}_{ij} = \dots  \]
+and it is sufficient to calculate $n$ matrices consequentially. Moreover, the task of calculation $L^(m)$ is similar to calculation of special matrix multiplication.
+
+The ordinary matrix multiplication $C = A \cdot B$ is defined by expression $c_{ij} = \sum_{k=1}^n a_{ik}b_{kj}$. The special one is resulted by substitutions of operations:
+\begin{outline}
+\1 $\min \to +$,
+\1 $+ \to \cdot$
+\end{outline}
+
+So due to the common nature with the ordinary matrix multiplication, this one also has $O(n^3)$ time complexity.
+\begin{algorithm}[!h]
+\caption{Special matrix multiplication$(L, W)$}
+\label{alg: specmul}
+\begin{algorithmic}
+\State $n \gets |V|$
+\State $L' = (l'_{ij})$ --- result matrix $n \times n$
+\For {$i = 1, \dots, n$}
+	\For {$j = 1, \dots, n$}
+		\State $l'_{ij} \gets \infty$
+		\For {$k = 1, \dots, n$}
+			\State	$l'_{ij} \gets \min \{ l'_{ij}, l_{ik} + w_{kj} \}$
+		\EndFor
+	\EndFor
+\EndFor
+\Ensure $L'$
+\end{algorithmic}
+\end{algorithm}
+
+So the All-Pairs Shortest Paths algorithm requires $O(n)$ special matrix multiplications and, thus, has $O(n^4)$ time complexity.
+
+The idea of improvement is quite evident: instead of calculation of all $L^{(1)}, \dots, L^{(n-1)}$ we can calculate only $L^{(1)}, L^{(2)}, L^{(4)}, L^{(8)}, \dots, L^{(2 \ceil{\log_2(n-1)})}$ and the last matrix $ L^{(2 \ceil{\log_2(n-1)})} = L^{(n-1)}$ since shortest paths in the graph with $n$ vertices have at most $n-1$ edges in their structure.
+
+The resulted algorithm, called Improved All-Pairs Shortest Paths, has time complexity of $O(n^3 \log n)$. The description of the algorithms is provided in \ref{alg: iapsp}.
+
+The algorithm space complexity is $O(n^2)$ since we have to store $n\times n$ matrix of distances at each step.
+
+\begin{algorithm}[!h]
+\caption{Improved All-Pairs Shortest Paths}
+\label{alg: iapsp}
+\begin{algorithmic}
+\Require $W$ --- adjacency matrix of simple weighted directed graph $G$
+\State $n \gets |V|$
+\State $L^{(0)} \gets W$
+\State $m \gets 1$
+\While {$m < n-1$}
+	\State $L^{(2m)} \gets $ Special Matrix Multiplication$(L^{(m)}, L^{(m)})$
+	\State $m \gets 2m$
+\EndWhile
+\Ensure $L^{(m)} = L^{(n-1)}$ --- matrix of all shortest paths
+\end{algorithmic}
+\end{algorithm}
+
+\section{Results}
+
+As soon as algorithm was implemented, as first we conducted some tests on whether the algorithm works properly. Two of all tested graphs are presented in the figures \ref{fig: 1} and \ref{fig: 3}. The first is a graph which is 5-complete if we ignore directions on edges, another is an arbitrary graph with 7 nodes. The results of the algorithm application to these graphs are depicted in the figures \ref{fig: 2} and \ref{fig: 4} correspondingly. 
+One can validate the results according to the graphs. 
+
+\begin{figure}[!h]
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.9\linewidth]{graph1}
+	\caption{Directed 5-"complete" graph}
+	\label{fig: 1}
+   \end{minipage}\hfill
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.9\linewidth]{graph1res}
+	\caption{The resulted matrix of shortest paths for the graph}
+	\label{fig: 2}
+   \end{minipage}\\
+\end{figure}
+
+\begin{figure}[!h]
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.9\linewidth]{graph2}
+	\caption{Directed graph with 7 nodes}
+	\label{fig: 3}
+   \end{minipage}\hfill
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=.9\linewidth]{graph2res}
+	\caption{The resulted matrix of shortest paths for the graph}
+	\label{fig: 4}
+   \end{minipage}\\
+\end{figure}
+
+Further, we conducted the experiment on measuring of time complexity estimate. The test was performed on graphs which are $n$-complete if we omit directions on edges. Here $n = 1,\dots,150$. For each $n$ 5 measurements were executed to calculate mean time complexity in order to reduce the influence of outliers on the experiment. The results are presented in the figure \ref{fig: 5} where one can see the fitted curve which surely reflects the theoretical time complexity of $O(n^3\log n)$.
+
+For example, according to the fitted line we may expect for $n = 500$ the execution time of $\approx 2$ minutes, for $n = 1000$ --- $\approx 20 $ minutes and for $n = 10000$ --- $\approx 18$ days. This demonstrates why the direct application of even improved algorithm may be irrational. For sure one can optimize the special matrix multiplication in the way that ordinary multiplication may be optimized to the time complexity of $O(n^{2.37})$ (see \cite{Alman20}).
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{APSPcomplexity}
+\caption{Results of time complexity measurements on complete graphs. The points are the mean execution times across 5 trials for each $n = 1,\dots,150$. The line is fitted to the points.}
+\label{fig: 5}
+\end{center}
+\end{figure}
+
+\section{Data structures and design techniques used in algorithms}
+In the random variables generation and building of adjacency matrix the Python's package \textbf{Numpy} is used due to its convenience. As a tool of drawing graphs the \textbf{networkx} package is used. We used Python lists to store and process adjacency matrices.
+
+
+\section*{Conclusion}
+As the result of this work, we have become familiar with Kruskal's and Improved All-Pairs Shortest Paths algorithms which are applied to weighted graphs. We performed some tests to examine the correctness of the algorithms and experiments to measure the time complexity in practice. The results surely correspond to the theoretical ones. The implementations for the algorithms are provided. Data structures and design techniques which were used in the implementations were discussed. The work's goals were achieved.
+
+\section*{Appendix}
+Algorithms implementation code is provided in \cite{repogithub}.
+
+{\small \bibliography{biblio}}
+\bibliographystyle{gost2008}
+
+\end{document}
