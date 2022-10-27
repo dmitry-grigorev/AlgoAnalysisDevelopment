@@ -90,7 +90,7 @@ def levenmarq(func, limits, x0, regulpar: Sequence[int, float, tuple[float, floa
             delta = -np.dot(np.linalg.inv(H + regulpar * identitymatrix), g)
             matrixinvers += 1
         elif isinstance(regulpar, tuple):
-            linesearchres = goldenratio_method(lambda nu: func(-np.linalg.inv(H + nu * identitymatrix) @ g),
+            linesearchres = goldenratio_method(lambda nu: func(curr-np.linalg.inv(H + nu * identitymatrix) @ g),
                                                left=regulpar[0], right=regulpar[1])
             fcalcs += linesearchres[3]
             delta = -np.linalg.inv(H + linesearchres[0] * identitymatrix) @ g
@@ -100,6 +100,7 @@ def levenmarq(func, limits, x0, regulpar: Sequence[int, float, tuple[float, floa
         curr = curr + delta
         while not belongs(curr, limits):
             curr -= rtaparam * delta
+
         niters += 1
 
     calcsstats = {"iterations": niters,

@@ -186,7 +186,7 @@ where $r_1,r_2 \sim U(0, 1)$ are the random variables, $C_1$ is the \textbf{cogn
 First of all, we generated data $(x_k, y_k)_{k=1}^{1000}$ as described in the section \ref{sec: probsetup}. We need to find the function $F(a, b, c ,d, x) = \frac{ax+b}{x^2+cx+d}$ which fits the data in terms of least squares. To tackle this problem, we applied the following algorithms with corresponding parameters:
 \begin{outline}
 \1 Nelder-Mead method,
-\1 Levenberg-Marquardt method (which uses hessian, not jacobian, as described in the \textbf{Task 3}) with Golden Section search of parameter $\nu$ in the range $[117, 120]$,
+\1 Levenberg-Marquardt method (which uses hessian, not jacobian, as described in the \textbf{Task 3}) with Golden Section search of parameter $\nu$ in the range $[10000, 100000]$,
 \1 Differential Evolution in the $7$-th form as described in the list \ref{difev} with $10$ individuals, $F = K = 0.8,\ C = 0.9$,
 \1 Particle Swarm Optimization with $W = C_1 = C_2 = 0.5$ and $100$ particles.
 \end{outline}
@@ -202,7 +202,7 @@ As a result of application of these methods, we obtained 4 curves which are illu
 \end{center}
 \end{figure}
  
-As one can see, the resulted from Nelder-Mead and Differential Evolution curves practically coincide with each other. Along with them, the Particle Swarm's curve also well describes the vertical asymptote in $x = 1$ but ignore another one in $x = 2$. At the same time, Levenberg-Marquardt algorithm provided another solution which describes the data badly at all.
+As one can see, the resulted from Nelder-Mead and Differential Evolution curves practically coincide with each other. Along with them, the Particle Swarm's curve also well describes the vertical asymptote in $x = 1$ but ignore another one in $x = 2$. At the same time, Levenberg-Marquardt algorithm provided another solution which describes the data badly at all since it does not handle the asymptotes. Furthermore, the method did not converge during 1000 iterations.
 Let us analyze the calculation results of these methods which are presented in the table 
 \ref{tab: 1}.
 
@@ -215,7 +215,7 @@ $$
 \hline
 \text{Nelder-Mead} & 409 & 695 & - & - & - & \approx 1.737 \\ 
 \hline
-\text{\specialcell{ Levenberg-Marquardt } } & 22 & 440 & 22 & 22 & 396 &\approx 11.929 \\
+\text{\specialcell{ Levenberg-Marquardt } } & 1000 & 42000 & 1000 & 1000 & 40000 &\approx 8.702 \\
 \hline
 \text{\specialcell{Differential\\ Evolution}} & 591 & 5920 & - & - & - & \approx 1.737 \\
 \hline
@@ -227,7 +227,7 @@ $$
 \label{tab: 1}
 \end{table}
 
-Here we can see that two metaheuristic algorithms required too many function evaluations since at each iteration they have to calculate its values for each individual/particle. The better one is Nelder-Mead algorithm since it required practically 10 times less function evaluations what resulted in the obtaining of the same solution as Differential Evolution provided. As for Levenberg-Marquardt algorithm, it required $396$ $4 \times 4$-matrices inversions what is expensive for sure. At last, this method converged to another local minimum since the target function is not convex in fact. Due to the ability to avoid being stuck in the neighborhood of local minima metaheuristic algorithms demonstrated themselves here better.
+Here we can see that two metaheuristic algorithms required too many function evaluations since at each iteration they have to calculate its values for each individual/particle. The better one is Nelder-Mead algorithm since it required practically 10 times less function evaluations what resulted in the obtaining of the same solution as Differential Evolution provided. As for Levenberg-Marquardt algorithm, it required too many $4 \times 4$-matrices inversions to find optimal parameter at each iteration what is expensive for sure. At last, this method converged to another local minimum since the target function is not convex in fact. Due to the ability to avoid being stuck in the neighborhood of local minima metaheuristic algorithms demonstrated themselves here better.
 
 \subsection{Problem II}
 Here we consider the problem of Travelling Salesman according to the data \textbf{LAU15}. The task is to find the optimal tour connecting 15 cities by means of Simulated Annealing. As an initial temperature $T_0$ we put $T_0 = 1$ and the temperature decreases with multiplier $\alpha = 0.9$ every $5$ iterations. The picture of initial path whose length is equal to $590$ is provided in the figure \ref{fig: 2}.
